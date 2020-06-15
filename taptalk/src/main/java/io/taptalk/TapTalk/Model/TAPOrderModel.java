@@ -18,8 +18,7 @@ public class TAPOrderModel {
     private Long discount;
     private Long totalPrice;
 
-    public TAPOrderModel() {
-    }
+    public TAPOrderModel() {}
 
     public TAPUserModel getCustomer() {
         return customer;

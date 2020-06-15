@@ -1,12 +1,11 @@
 package io.taptalk.TapTalk.Helper.OverScrolled.Adapter;
 
 import android.graphics.Canvas;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.StaggeredGridLayoutManager;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.View;
-
-import androidx.recyclerview.widget.ItemTouchHelper;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import java.util.List;
 
@@ -16,10 +15,8 @@ public class RecyclerViewOverScrollDecorAdapter implements IOverScrollDecoratorA
 
     protected interface Impl {
         boolean isInAbsoluteStart();
-
         boolean isInAbsoluteEnd();
     }
-
     protected final RecyclerView mRecyclerView;
     protected final Impl mImpl;
 
@@ -30,7 +27,8 @@ public class RecyclerViewOverScrollDecorAdapter implements IOverScrollDecoratorA
 
         final RecyclerView.LayoutManager layoutManager = mRecyclerView.getLayoutManager();
         if (layoutManager instanceof LinearLayoutManager ||
-                layoutManager instanceof StaggeredGridLayoutManager) {
+                layoutManager instanceof StaggeredGridLayoutManager)
+        {
             final int orientation =
                     (layoutManager instanceof LinearLayoutManager
                             ? ((LinearLayoutManager) layoutManager).getOrientation()
@@ -41,7 +39,9 @@ public class RecyclerViewOverScrollDecorAdapter implements IOverScrollDecoratorA
             } else {
                 mImpl = new ImplVerticalLayout();
             }
-        } else {
+        }
+        else
+        {
             throw new IllegalArgumentException("Recycler views with custom layout managers are not supported by this adapter out of the box." +
                     "Try implementing and providing an explicit 'impl' parameter to the other c'tors, or otherwise create a custom adapter subclass of your own.");
         }

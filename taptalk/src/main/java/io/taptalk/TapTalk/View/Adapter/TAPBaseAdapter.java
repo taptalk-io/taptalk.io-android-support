@@ -1,6 +1,6 @@
 package io.taptalk.TapTalk.View.Adapter;
 
-import androidx.recyclerview.widget.RecyclerView;
+import android.support.v7.widget.RecyclerView;
 
 import java.util.List;
 

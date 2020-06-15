@@ -11,7 +11,6 @@ import android.net.NetworkRequest;
 import android.os.Build;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import io.taptalk.TapTalk.Helper.TapTalk;
@@ -20,28 +19,17 @@ import io.taptalk.TapTalk.ViewModel.TAPRoomListViewModel;
 
 public class TAPNetworkStateManager {
     private static final String TAG = TAPNetworkStateManager.class.getSimpleName();
-    private static HashMap<String, TAPNetworkStateManager> instances;
-
-    private String instanceKey = "";
+    private static TAPNetworkStateManager instance;
     private List<TapTalkNetworkInterface> listeners;
 
     private TapNetworkCallback networkCallback;
     private NetworkRequest networkRequest;
 
-    public static TAPNetworkStateManager getInstance(String instanceKey) {
-        if (!getInstances().containsKey(instanceKey)) {
-            TAPNetworkStateManager instance = new TAPNetworkStateManager(instanceKey);
-            getInstances().put(instanceKey, instance);
-        }
-        return getInstances().get(instanceKey);
+    public static TAPNetworkStateManager getInstance() {
+        return instance == null ? (instance = new TAPNetworkStateManager()) : instance;
     }
 
-    private static HashMap<String, TAPNetworkStateManager> getInstances() {
-        return null == instances ? instances = new HashMap<>() : instances;
-    }
-
-    public TAPNetworkStateManager(String instanceKey) {
-        this.instanceKey = instanceKey;
+    public TAPNetworkStateManager() {
         listeners = new ArrayList<>();
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -56,12 +44,8 @@ public class TAPNetworkStateManager {
 
     public void registerCallback(Context context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && null != networkCallback) {
-            try {
-                getConnectivityManager(context).registerNetworkCallback(networkRequest, networkCallback);
-            } catch (IllegalArgumentException e) {
-                // FIXME: 31 Mar 2020
-            }
-        } else {
+            getConnectivityManager(context).registerNetworkCallback(networkRequest, networkCallback);
+        } else  {
             // Broadcast receiver will not receive callback right away, trigger connectivity change manually to update connection status
             triggerConnectivityChange();
         }
@@ -69,12 +53,7 @@ public class TAPNetworkStateManager {
 
     public void unregisterCallback(Context context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && null != networkCallback) {
-            try {
-                getConnectivityManager(context).unregisterNetworkCallback(networkCallback);
-            } catch (IllegalArgumentException e) {
-                // FIXME: 31 Mar 2020 java.lang.IllegalArgumentException:
-                //  NetworkCallback was already unregistered when called more than once
-            }
+            getConnectivityManager(context).unregisterNetworkCallback(networkCallback);
         }
     }
 
@@ -113,10 +92,10 @@ public class TAPNetworkStateManager {
     }
 
     private void triggerConnectivityChange() {
-        if (TAPNetworkStateManager.getInstance(instanceKey).hasNetworkConnection(TapTalk.appContext)) {
-            TAPNetworkStateManager.getInstance(instanceKey).onNetworkAvailable();
+        if (TAPNetworkStateManager.getInstance().hasNetworkConnection(TapTalk.appContext)) {
+            TAPNetworkStateManager.getInstance().onNetworkAvailable();
         } else {
-            TAPNetworkStateManager.getInstance(instanceKey).onNetworkLost();
+            TAPNetworkStateManager.getInstance().onNetworkLost();
         }
     }
 
@@ -130,9 +109,9 @@ public class TAPNetworkStateManager {
     }
 
     private void onNetworkLost() {
-        TAPRoomListViewModel.setShouldNotLoadFromAPI(instanceKey,false);
-        TAPDataManager.getInstance(instanceKey).setNeedToQueryUpdateRoomList(true);
-        TAPConnectionManager.getInstance(instanceKey).close();
+        TAPRoomListViewModel.setShouldNotLoadFromAPI(false);
+        TAPDataManager.getInstance().setNeedToQueryUpdateRoomList(true);
+        TAPConnectionManager.getInstance().close();
     }
 
     public class TapNetworkCallback extends ConnectivityManager.NetworkCallback {
@@ -161,9 +140,7 @@ public class TAPNetworkStateManager {
                     !intent.getAction().equals("android.net.conn.CONNECTIVITY_CHANGE")) {
                 return;
             }
-            for (String instanceKey : TapTalk.getInstanceKeys()) {
-                TAPNetworkStateManager.getInstance(instanceKey).triggerConnectivityChange();
-            }
+            TAPNetworkStateManager.getInstance().triggerConnectivityChange();
         }
     }
 }

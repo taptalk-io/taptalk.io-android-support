@@ -1,6 +1,6 @@
 package io.taptalk.TapTalk.Listener;
 
-import androidx.annotation.Keep;
+import android.support.annotation.Keep;
 
 import io.taptalk.TapTalk.Interface.TapGetRoomInterface;
 import io.taptalk.TapTalk.Model.TAPRoomModel;

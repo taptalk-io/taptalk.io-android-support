@@ -1,7 +1,6 @@
 package io.taptalk.TapTalk.Firebase;
 
-import androidx.annotation.Keep;
-import androidx.annotation.NonNull;
+import android.support.annotation.Keep;
 
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
@@ -14,23 +13,18 @@ public class TapFirebaseMessagingService extends FirebaseMessagingService {
     private static final String TAG = TapFirebaseMessagingService.class.getSimpleName();
 
     @Override
-    public void onMessageReceived(@NonNull RemoteMessage remoteMessage) {
+    public void onMessageReceived(RemoteMessage remoteMessage) {
         super.onMessageReceived(remoteMessage);
         if (TapTalk.isTapTalkNotification(remoteMessage)) {
-            // TODO: 27 Mar 2020 IDENTIFY OWNER INSTANCE, REMOVE LOOP
-            for (String instanceKey : TapTalk.getInstanceKeys()) {
-                TapTalk.handleTapTalkPushNotification(instanceKey, remoteMessage);
-            }
+            TapTalk.handleTapTalkPushNotification(remoteMessage);
         }
     }
 
     @Override
-    public void onNewToken(@NonNull String s) {
+    public void onNewToken(String s) {
         super.onNewToken(s);
-        for (String instanceKey : TapTalk.getInstanceKeys()) {
-            if (!TAPDataManager.getInstance(instanceKey).checkFirebaseToken(s)) {
-                TAPDataManager.getInstance(instanceKey).saveFirebaseToken(s);
-            }
+        if (!TAPDataManager.getInstance().checkFirebaseToken(s)) {
+            TAPDataManager.getInstance().saveFirebaseToken(s);
         }
     }
 }

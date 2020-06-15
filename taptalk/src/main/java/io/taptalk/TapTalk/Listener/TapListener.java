@@ -1,8 +1,7 @@
 package io.taptalk.TapTalk.Listener;
 
 import android.app.Activity;
-
-import androidx.annotation.Keep;
+import android.support.annotation.Keep;
 
 import io.taptalk.TapTalk.Helper.TapTalk;
 import io.taptalk.TapTalk.Interface.TapTalkInterface;
@@ -10,16 +9,6 @@ import io.taptalk.TapTalk.Model.TAPMessageModel;
 
 @Keep
 public abstract class TapListener implements TapTalkInterface {
-
-    private String instanceKey = "";
-
-    public TapListener() {
-    }
-
-    public TapListener(String instanceKey) {
-        this.instanceKey = instanceKey;
-    }
-
     @Override
     public void onTapTalkRefreshTokenExpired() {
     }
@@ -30,7 +19,7 @@ public abstract class TapListener implements TapTalkInterface {
 
     @Override
     public void onNotificationReceived(TAPMessageModel message) {
-        TapTalk.showTapTalkNotification(instanceKey, message);
+        TapTalk.showTapTalkNotification(message);
     }
 
     @Override

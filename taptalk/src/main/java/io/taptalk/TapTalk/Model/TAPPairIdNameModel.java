@@ -1,6 +1,6 @@
 package io.taptalk.TapTalk.Model;
 
-import androidx.room.Ignore;
+import android.arch.persistence.room.Ignore;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -17,8 +17,7 @@ public class TAPPairIdNameModel {
         this.name = name;
     }
 
-    public TAPPairIdNameModel() {
-    }
+    public TAPPairIdNameModel() {}
 
     public String getId() {
         return id;

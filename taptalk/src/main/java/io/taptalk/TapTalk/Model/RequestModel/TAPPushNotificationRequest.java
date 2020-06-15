@@ -1,15 +1,13 @@
 package io.taptalk.TapTalk.Model.RequestModel;
 
-import androidx.annotation.Nullable;
+import android.support.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class TAPPushNotificationRequest {
     @JsonProperty("fcmToken") private String fcmToken;
     //ini nnti kalau boleh di hapus, di hapus aja
-    @Nullable
-    @JsonProperty("apnToken")
-    private String apnToken;
+    @Nullable @JsonProperty("apnToken") private String apnToken;
 
     public TAPPushNotificationRequest(String fcmToken, @Nullable String apnToken) {
         this.fcmToken = fcmToken;

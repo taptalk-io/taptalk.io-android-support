@@ -6,10 +6,10 @@
     tools:context="io.taptalk.TapTalk.View.Activity.TapUIRoomListActivity"
     android:background="@color/tapDefaultBackgroundColor">
 
-    <androidx.fragment.app.FragmentContainerView
+    <fragment
         android:id="@+id/fragment_room_list"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
-<!--        class="io.taptalk.TapTalk.View.Fragment.TapUIMainRoomListFragment" />-->
+        android:layout_height="match_parent"
+        class="io.taptalk.TapTalk.View.Fragment.TapUIMainRoomListFragment" />
 
 </FrameLayout>

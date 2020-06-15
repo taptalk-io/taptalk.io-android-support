@@ -1,6 +1,6 @@
 package io.taptalk.TapTalk.DiffCallback;
 
-import androidx.recyclerview.widget.DiffUtil;
+import android.support.v7.util.DiffUtil;
 
 import java.util.List;
 

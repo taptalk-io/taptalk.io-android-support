@@ -169,9 +169,11 @@ public class TAPCacheManager {
             return;
         }
         new Thread(() -> {
-            getMemoryCache().evictAll();
-            diskLruCache.clearCache();
-            diskLruCache = null;
+            if (null != diskLruCache) {
+                getMemoryCache().evictAll();
+                diskLruCache.clearCache();
+                diskLruCache = null;
+            }
         }).start();
     }
 }

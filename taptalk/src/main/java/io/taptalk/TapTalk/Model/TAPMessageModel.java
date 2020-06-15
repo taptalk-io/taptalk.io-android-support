@@ -2,40 +2,29 @@ package io.taptalk.TapTalk.Model;
 
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.util.Log;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 import io.taptalk.TapTalk.Helper.TAPTimeFormatter;
 import io.taptalk.TapTalk.Helper.TAPUtils;
-import io.taptalk.TapTalk.Manager.TAPChatManager;
+import io.taptalk.TapTalk.Helper.TapTalk;
 
-import static io.taptalk.TapTalk.Const.TAPDefaultConstant.LEFT_BUBBLE_SPACE_APPEND;
-import static io.taptalk.TapTalk.Const.TAPDefaultConstant.MessageData.ADDRESS;
-import static io.taptalk.TapTalk.Const.TAPDefaultConstant.MessageData.CAPTION;
 import static io.taptalk.TapTalk.Const.TAPDefaultConstant.MessageData.FILE_ID;
 import static io.taptalk.TapTalk.Const.TAPDefaultConstant.MessageData.FILE_URI;
 import static io.taptalk.TapTalk.Const.TAPDefaultConstant.MessageData.FILE_URL;
 import static io.taptalk.TapTalk.Const.TAPDefaultConstant.MessageData.IMAGE_URL;
 import static io.taptalk.TapTalk.Const.TAPDefaultConstant.MessageType.TYPE_FILE;
 import static io.taptalk.TapTalk.Const.TAPDefaultConstant.MessageType.TYPE_IMAGE;
-import static io.taptalk.TapTalk.Const.TAPDefaultConstant.MessageType.TYPE_LOCATION;
-import static io.taptalk.TapTalk.Const.TAPDefaultConstant.MessageType.TYPE_TEXT;
 import static io.taptalk.TapTalk.Const.TAPDefaultConstant.MessageType.TYPE_VIDEO;
 import static io.taptalk.TapTalk.Const.TAPDefaultConstant.QuoteFileType.FILE;
 import static io.taptalk.TapTalk.Const.TAPDefaultConstant.QuoteFileType.IMAGE;
 import static io.taptalk.TapTalk.Const.TAPDefaultConstant.QuoteFileType.VIDEO;
-import static io.taptalk.TapTalk.Const.TAPDefaultConstant.RIGHT_BUBBLE_SPACE_APPEND;
-import static io.taptalk.TapTalk.Const.TAPDefaultConstant.RoomType.TYPE_PERSONAL;
 
 /**
  * If this class has more attribute, don't forget to add it to copyMessageModel function
@@ -103,29 +92,15 @@ public class TAPMessageModel implements Parcelable {
     @JsonIgnore private String messageStatusText;
     @JsonIgnore private boolean isExpanded, isNeedAnimateSend, isAnimating;
 
-    public TAPMessageModel(@Nullable String messageID,
-                           @NonNull String localID,
-                           @Nullable String filterID,
-                           String body,
-                           TAPRoomModel room,
-                           Integer type,
-                           Long created,
-                           TAPUserModel user,
-                           String recipientID,
-                           @Nullable HashMap<String, Object> data,
-                           @Nullable TAPQuoteModel quote,
-                           @Nullable TAPReplyToModel replyTo,
-                           @Nullable TAPForwardFromModel forwardFrom,
-                           @Nullable Boolean isDeleted,
-                           @Nullable Boolean isSending,
-                           @Nullable Boolean isFailedSend,
-                           @Nullable Boolean isDelivered,
-                           @Nullable Boolean isRead,
-                           @Nullable Boolean isHidden,
-                           @Nullable Long updated,
-                           @Nullable Long deleted,
-                           @Nullable String action,
-                           @Nullable TAPMessageTargetModel target) {
+    public TAPMessageModel(@Nullable String messageID, @NonNull String localID, @Nullable String filterID, String body,
+                           TAPRoomModel room, Integer type, Long created, TAPUserModel user,
+                           String recipientID, @Nullable HashMap<String, Object> data,
+                           @Nullable TAPQuoteModel quote, @Nullable TAPReplyToModel replyTo,
+                           @Nullable TAPForwardFromModel forwardFrom, @Nullable Boolean isDeleted,
+                           @Nullable Boolean isSending, @Nullable Boolean isFailedSend,
+                           @Nullable Boolean isDelivered, @Nullable Boolean isRead,
+                           @Nullable Boolean isHidden, @Nullable Long updated, @Nullable Long deleted,
+                           @Nullable String action, @Nullable TAPMessageTargetModel target) {
         this.messageID = messageID;
         this.localID = localID;
         this.filterID = filterID;
@@ -175,7 +150,7 @@ public class TAPMessageModel implements Parcelable {
         String quoteFileID = null == quotedMessage.getData() ? "" : (String) quotedMessage.getData().get(FILE_ID);
         String quoteImageURL = null == quotedMessage.getData() ? "" : null != quotedMessage.getData().get(FILE_URL) ? (String) quotedMessage.getData().get(FILE_URL) : (String) quotedMessage.getData().get(IMAGE_URL);
         String quoteFileType = quotedMessage.getType() == TYPE_IMAGE ? IMAGE :
-                quotedMessage.getType() == TYPE_VIDEO ? VIDEO :
+                        quotedMessage.getType() == TYPE_VIDEO ? VIDEO :
                         quotedMessage.getType() == TYPE_FILE ? FILE : "";
         TAPQuoteModel quote = new TAPQuoteModel(quoteTitle, quoteContent, quoteFileID, quoteImageURL, quoteFileType);
         TAPReplyToModel reply = new TAPReplyToModel(quotedMessage.getMessageID()
@@ -208,9 +183,8 @@ public class TAPMessageModel implements Parcelable {
     }
 
     public void updateMessageStatusText() {
-        if (created > 0L) {
-            //messageStatusText = TAPTimeFormatter.getInstance().durationChatString(TapTalk.appContext, created);
-            messageStatusText = TAPTimeFormatter.getInstance().formatClock(created);
+        if (created > 0L && (null == messageStatusText || messageStatusText.isEmpty())) {
+            messageStatusText = TAPTimeFormatter.getInstance().durationChatString(TapTalk.appContext, created);
         }
     }
 
@@ -427,6 +401,10 @@ public class TAPMessageModel implements Parcelable {
         return messageStatusText;
     }
 
+    public void setMessageStatusText(String messageStatusText) {
+        this.messageStatusText = messageStatusText;
+    }
+
     public boolean isExpanded() {
         return isExpanded;
     }
@@ -467,7 +445,7 @@ public class TAPMessageModel implements Parcelable {
     }
 
     public void updateValue(TAPMessageModel model) {
-        // Validate null/empty value from new model
+        //Ini semuanya di jagain biar kalau ada yang null ga ngubah datanya yang udah ada
         if (null != model.messageID && !"".equals(model.messageID))
             this.messageID = model.getMessageID();
         if (!"".equals(model.localID)) this.localID = model.getLocalID();
@@ -507,7 +485,6 @@ public class TAPMessageModel implements Parcelable {
             this.isRead = model.getIsRead();
         if (null != model.getAction()) this.action = model.getAction();
         if (null != model.getTarget()) this.target = model.getTarget();
-        updateMessageStatusText();
         // Update when adding fields to model
     }
 

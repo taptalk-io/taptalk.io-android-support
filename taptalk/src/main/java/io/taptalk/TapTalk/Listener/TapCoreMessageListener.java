@@ -1,8 +1,7 @@
 package io.taptalk.TapTalk.Listener;
 
 import android.net.Uri;
-
-import androidx.annotation.Keep;
+import android.support.annotation.Keep;
 
 import io.taptalk.TapTalk.Interface.TapCoreMessageInterface;
 import io.taptalk.TapTalk.Model.TAPMessageModel;

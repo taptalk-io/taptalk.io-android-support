@@ -9,9 +9,7 @@ import javax.annotation.Nullable;
 
 public class TAPTypingModel implements Parcelable {
     @JsonProperty("roomID") private String roomID;
-    @Nullable
-    @JsonProperty("user")
-    private TAPUserModel user;
+    @Nullable @JsonProperty("user") private TAPUserModel user;
 
     public TAPTypingModel(String roomID) {
         this.roomID = roomID;
