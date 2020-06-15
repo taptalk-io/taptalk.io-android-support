@@ -1,13 +1,10 @@
 package io.taptalk.TapTalk.ViewModel;
 
 import android.app.Application;
+import android.arch.lifecycle.AndroidViewModel;
+import android.arch.lifecycle.LiveData;
 import android.net.Uri;
-
-import androidx.annotation.NonNull;
-import androidx.lifecycle.AndroidViewModel;
-import androidx.lifecycle.LiveData;
-import androidx.lifecycle.ViewModel;
-import androidx.lifecycle.ViewModelProvider;
+import android.support.annotation.NonNull;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,8 +19,6 @@ import io.taptalk.TapTalk.Model.TAPUserModel;
 import static io.taptalk.TapTalk.Model.ResponseModel.TapContactListModel.TYPE_SELECTED_GROUP_MEMBER;
 
 public class TAPContactListViewModel extends AndroidViewModel {
-
-    private String instanceKey;
 
     // Contact List needs to be sorted ascending by name
     private LiveData<List<TAPUserModel>> contactListLive;
@@ -55,27 +50,9 @@ public class TAPContactListViewModel extends AndroidViewModel {
     private int initialGroupSize = 0;
     private int groupAction;
 
-    public static class TAPContactListViewModelFactory implements ViewModelProvider.Factory {
-        private Application application;
-        private String instanceKey;
-
-        public TAPContactListViewModelFactory(Application application, String instanceKey) {
-            this.application = application;
-            this.instanceKey = instanceKey;
-        }
-
-        @NonNull
-        @Override
-        @SuppressWarnings("unchecked")
-        public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
-            return (T) new TAPContactListViewModel(application, instanceKey);
-        }
-    }
-
-    public TAPContactListViewModel(@NonNull Application application, String instanceKey) {
+    public TAPContactListViewModel(@NonNull Application application) {
         super(application);
-        this.instanceKey = instanceKey;
-        contactListLive = TAPDataManager.getInstance(instanceKey).getMyContactList();
+        contactListLive = TAPDataManager.getInstance().getMyContactList();
     }
 
     public LiveData<List<TAPUserModel>> getContactListLive() {

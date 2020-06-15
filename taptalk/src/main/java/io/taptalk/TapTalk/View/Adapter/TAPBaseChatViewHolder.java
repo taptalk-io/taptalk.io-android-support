@@ -3,14 +3,13 @@ package io.taptalk.TapTalk.View.Adapter;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.support.v4.content.LocalBroadcastManager;
 import android.text.util.Linkify;
 import android.util.Log;
 import android.view.HapticFeedbackConstants;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import java.util.regex.Pattern;
 
@@ -21,8 +20,7 @@ import io.taptalk.TapTalk.Helper.TapTalk;
 import io.taptalk.TapTalk.Manager.TAPMessageStatusManager;
 import io.taptalk.TapTalk.Model.TAPMessageModel;
 import io.taptalk.TapTalk.Model.TAPUserModel;
-import io.taptalk.TapTalk.BuildConfig;
-import io.taptalk.TapTalk.View.Activity.TAPBaseActivity;
+import io.taptalk.Taptalk.BuildConfig;
 
 import static io.taptalk.TapTalk.Const.TAPDefaultConstant.Extras.COPY_MESSAGE;
 import static io.taptalk.TapTalk.Const.TAPDefaultConstant.Extras.MESSAGE;
@@ -30,7 +28,6 @@ import static io.taptalk.TapTalk.Const.TAPDefaultConstant.Extras.URL_MESSAGE;
 import static io.taptalk.TapTalk.Const.TAPDefaultConstant.LongPressBroadcastEvent.LongPressChatBubble;
 import static io.taptalk.TapTalk.Const.TAPDefaultConstant.LongPressBroadcastEvent.LongPressEmail;
 import static io.taptalk.TapTalk.Const.TAPDefaultConstant.LongPressBroadcastEvent.LongPressLink;
-import static io.taptalk.TapTalk.Const.TAPDefaultConstant.LongPressBroadcastEvent.LongPressMention;
 import static io.taptalk.TapTalk.Const.TAPDefaultConstant.LongPressBroadcastEvent.LongPressPhone;
 
 public class TAPBaseChatViewHolder extends TAPBaseViewHolder<TAPMessageModel> {
@@ -44,23 +41,19 @@ public class TAPBaseChatViewHolder extends TAPBaseViewHolder<TAPMessageModel> {
         // TODO: 13 November 2019 MARK MESSAGE READ HERE?
     }
 
-    protected void onMessageSending(TAPMessageModel message) {
+    protected void setMessage(TAPMessageModel message) {
 
     }
 
-    protected void onMessageFailedToSend(TAPMessageModel message) {
+    protected void receiveSentEvent(TAPMessageModel message) {
 
     }
 
-    protected void onMessageSent(TAPMessageModel message) {
+    protected void receiveDeliveredEvent(TAPMessageModel message) {
 
     }
 
-    protected void onMessageDelivered(TAPMessageModel message) {
-
-    }
-
-    protected void onMessageRead(TAPMessageModel message) {
+    protected void receiveReadEvent(TAPMessageModel message) {
 
     }
 
@@ -68,87 +61,62 @@ public class TAPBaseChatViewHolder extends TAPBaseViewHolder<TAPMessageModel> {
         if (!myUserModel.getUserID().equals(item.getUser().getUserID()) &&
                 (null == item.getIsRead() || !item.getIsRead()) &&
                 (null != item.getSending() && !item.getSending()) &&
-                !TAPMessageStatusManager.getInstance(
-                        ((TAPBaseActivity) itemView.getContext()).instanceKey)
-                        .getReadMessageQueue().contains(item.getMessageID()) &&
-                !TAPMessageStatusManager.getInstance(
-                        ((TAPBaseActivity) itemView.getContext()).instanceKey)
-                        .getMessagesMarkedAsRead().contains(item.getMessageID())
+                !TAPMessageStatusManager.getInstance().getReadMessageQueue().contains(item.getMessageID()) &&
+                !TAPMessageStatusManager.getInstance().getMessagesMarkedAsRead().contains(item.getMessageID())
         ) {
             item.updateReadMessage();
             new Thread(() -> {
-                TAPMessageStatusManager.getInstance(
-                        ((TAPBaseActivity) itemView.getContext()).instanceKey)
-                        .addUnreadListByOne(item.getRoom().getRoomID());
-                if (TAPUtils.isActiveUserMentioned(item, myUserModel)) {
-                    TAPMessageStatusManager.getInstance(
-                            ((TAPBaseActivity) itemView.getContext()).instanceKey)
-                            .addUnreadMentionByOne(item.getRoom().getRoomID());
-                }
-                TAPMessageStatusManager.getInstance(
-                        ((TAPBaseActivity) itemView.getContext()).instanceKey)
-                        .addReadMessageQueue(item.getMessageID());
+                TAPMessageStatusManager.getInstance().addUnreadListByOne(item.getRoom().getRoomID());
+                TAPMessageStatusManager.getInstance().addReadMessageQueue(item.getMessageID());
             }).start();
         }
     }
 
     protected void enableLongPress(Context context, View view, TAPMessageModel message) {
-        if (null != view) {
-            view.setOnLongClickListener(v -> {
-                Intent intent = new Intent(LongPressChatBubble);
-                intent.putExtra(MESSAGE, message);
-                LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
-                v.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
-                if (BuildConfig.DEBUG || TapTalk.isLoggingEnabled) {
-                    Log.d(this.getClass().getSimpleName(), "Message model: " + TAPUtils.toJsonString(message));
-                }
-                return true;
-            });
-        }
+        view.setOnLongClickListener(v -> {
+            Intent intent = new Intent(LongPressChatBubble);
+            intent.putExtra(MESSAGE, message);
+            LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
+            v.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
+            if (BuildConfig.DEBUG || TapTalk.isLoggingEnabled) {
+                Log.d(this.getClass().getSimpleName(), "Message model: " + TAPUtils.toJsonString(message));
+            }
+            return true;
+        });
     }
 
     protected void setLinkDetection(Context context, TextView tvMessageBody) {
         TAPBetterLinkMovementMethod movementMethod = TAPBetterLinkMovementMethod.newInstance()
                 .setOnLinkClickListener((textView, url, originalText) -> {
                     if (null != url && url.contains("mailto:")) {
-                        // Email
+                        //for Email
                         return false;
                     } else if (null != url && url.contains("tel:")) {
-                        // Phone Number
-                        return false;
-                    } else if (null != url && url.contains("@")) {
-                        // Mention
+                        //For Phone Number
                         return false;
                     } else if (null != url) {
-                        // Url
+                        //For Url
                         TAPUtils.openCustomTabLayout((Activity) itemView.getContext(), url);
                         return true;
                     }
                     return false;
                 }).setOnLinkLongClickListener((textView, url, originalText) -> {
                     if (null != url && url.contains("mailto:")) {
-                        // Email
+                        //for Email
                         Intent intent = new Intent(LongPressEmail);
                         intent.putExtra(URL_MESSAGE, url);
                         intent.putExtra(COPY_MESSAGE, originalText);
                         LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
                         return true;
                     } else if (null != url && url.contains("tel:")) {
-                        // Phone Number
+                        //For Phone Number
                         Intent intent = new Intent(LongPressPhone);
                         intent.putExtra(URL_MESSAGE, url);
                         intent.putExtra(COPY_MESSAGE, originalText);
                         LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
                         return true;
-                    } else if (null != url && url.contains("@")) {
-                        // Mention
-                        Intent intent = new Intent(LongPressMention);
-                        intent.putExtra(URL_MESSAGE, url);
-                        intent.putExtra(COPY_MESSAGE, originalText);
-                        LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
-                        return true;
                     } else if (null != url) {
-                        // Url
+                        //For Url
                         Intent intent = new Intent(LongPressLink);
                         intent.putExtra(URL_MESSAGE, url);
                         intent.putExtra(COPY_MESSAGE, originalText);

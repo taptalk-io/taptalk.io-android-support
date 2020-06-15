@@ -1,6 +1,6 @@
 package io.taptalk.TapTalk.Listener;
 
-import androidx.annotation.Keep;
+import android.support.annotation.Keep;
 
 import io.taptalk.TapTalk.API.View.TapProjectConfigsInterface;
 import io.taptalk.TapTalk.Model.TapConfigs;

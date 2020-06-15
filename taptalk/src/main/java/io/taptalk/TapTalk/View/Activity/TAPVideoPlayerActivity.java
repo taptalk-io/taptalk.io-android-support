@@ -1,9 +1,7 @@
 package io.taptalk.TapTalk.View.Activity;
 
 import android.Manifest;
-import android.app.Activity;
-import android.content.Context;
-import android.content.Intent;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.media.MediaMetadataRetriever;
@@ -12,6 +10,11 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.NonNull;
+import android.support.constraint.ConstraintLayout;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,13 +25,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.VideoView;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.lifecycle.ViewModelProvider;
-
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -36,16 +32,14 @@ import io.taptalk.TapTalk.Helper.TAPUtils;
 import io.taptalk.TapTalk.Interface.TapTalkActionInterface;
 import io.taptalk.TapTalk.Manager.TAPDataManager;
 import io.taptalk.TapTalk.Manager.TAPFileDownloadManager;
-import io.taptalk.TapTalk.Model.TAPMessageModel;
 import io.taptalk.TapTalk.ViewModel.TAPVideoPlayerViewModel;
-import io.taptalk.TapTalk.R;
+import io.taptalk.Taptalk.R;
 
-import static io.taptalk.TapTalk.Const.TAPDefaultConstant.Extras.INSTANCE_KEY;
 import static io.taptalk.TapTalk.Const.TAPDefaultConstant.Extras.MESSAGE;
 import static io.taptalk.TapTalk.Const.TAPDefaultConstant.Extras.URI;
 import static io.taptalk.TapTalk.Const.TAPDefaultConstant.PermissionRequest.PERMISSION_WRITE_EXTERNAL_STORAGE_SAVE_VIDEO;
 
-public class TAPVideoPlayerActivity extends TAPBaseActivity {
+public class TAPVideoPlayerActivity extends AppCompatActivity {
 
     private final String TAG = TAPVideoPlayerActivity.class.getSimpleName();
 
@@ -57,33 +51,6 @@ public class TAPVideoPlayerActivity extends TAPBaseActivity {
     private SeekBar seekBar; // TODO: 21 November 2019 STYLE SEEK BAR FOR API BELOW 21
 
     private TAPVideoPlayerViewModel vm;
-
-    public static void start(
-            Context context,
-            String instanceKey,
-            Uri uri
-    ) {
-        start(context, instanceKey, uri, null);
-    }
-
-    public static void start(
-            Context context,
-            String instanceKey,
-            Uri uri,
-            @Nullable TAPMessageModel message
-    ) {
-        Intent intent = new Intent(context, TAPVideoPlayerActivity.class);
-        intent.putExtra(INSTANCE_KEY, instanceKey);
-        intent.putExtra(URI, uri.toString());
-        if (null != message) {
-            intent.putExtra(MESSAGE, message);
-        }
-        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        context.startActivity(intent);
-        if (context instanceof Activity) {
-            ((Activity) context).overridePendingTransition(R.anim.tap_fade_in, R.anim.tap_stay);
-        }
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -106,7 +73,7 @@ public class TAPVideoPlayerActivity extends TAPBaseActivity {
     protected void onPause() {
         super.onPause();
         pauseVideo();
-        TAPDataManager.getInstance(instanceKey).saveMediaVolumePreference(vm.getMediaVolume());
+        TAPDataManager.getInstance().saveMediaVolumePreference(vm.getMediaVolume());
     }
 
     @Override
@@ -133,7 +100,7 @@ public class TAPVideoPlayerActivity extends TAPBaseActivity {
     }
 
     private void initViewModel() {
-        vm = new ViewModelProvider(this).get(TAPVideoPlayerViewModel.class);
+        vm = ViewModelProviders.of(this).get(TAPVideoPlayerViewModel.class);
         String uriString = getIntent().getStringExtra(URI);
         vm.setMessage(getIntent().getParcelableExtra(MESSAGE));
         if (null != uriString) {
@@ -356,7 +323,7 @@ public class TAPVideoPlayerActivity extends TAPBaseActivity {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_WRITE_EXTERNAL_STORAGE_SAVE_VIDEO);
         } else {
             showLoading();
-            TAPFileDownloadManager.getInstance(instanceKey).writeFileToDisk(this, vm.getMessage(), saveVideoListener);
+            TAPFileDownloadManager.getInstance().writeFileToDisk(this, vm.getMessage(), saveVideoListener);
         }
     }
 
@@ -388,8 +355,7 @@ public class TAPVideoPlayerActivity extends TAPBaseActivity {
     }
 
     private View.OnClickListener saveButtonListener = v -> saveVideo();
-    private View.OnClickListener emptyListener = v -> {
-    };
+    private View.OnClickListener emptyListener = v -> {};
 
     private MediaPlayer.OnPreparedListener onPreparedListener = new MediaPlayer.OnPreparedListener() {
         @Override
@@ -400,7 +366,7 @@ public class TAPVideoPlayerActivity extends TAPBaseActivity {
                 vm.setDuration(mediaPlayer.getDuration());
                 vm.setVideoPlaying(true);
                 TAPVideoPlayerActivity.this.startProgressTimer();
-                vm.setMediaVolume(TAPDataManager.getInstance(instanceKey).getMediaVolumePreference());
+                vm.setMediaVolume(TAPDataManager.getInstance().getMediaVolumePreference());
                 ivButtonMute.setImageDrawable(vm.getMediaVolume() > 0f ? ContextCompat.getDrawable(TAPVideoPlayerActivity.this, R.drawable.tap_ic_volume_on) : ContextCompat.getDrawable(TAPVideoPlayerActivity.this, R.drawable.tap_ic_volume_off));
                 tvDuration.setText(TAPUtils.getMediaDurationString(vm.getDuration(), vm.getDuration()));
                 vm.setFirstLoadFinished(true);

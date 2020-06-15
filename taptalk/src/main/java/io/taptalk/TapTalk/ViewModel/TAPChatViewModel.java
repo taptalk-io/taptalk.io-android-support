@@ -1,15 +1,13 @@
 package io.taptalk.TapTalk.ViewModel;
 
 import android.app.Application;
-import android.content.Context;
+import android.arch.lifecycle.AndroidViewModel;
+import android.arch.lifecycle.LiveData;
 import android.net.Uri;
 import android.os.Handler;
+import android.util.Log;
 
-import androidx.annotation.NonNull;
-import androidx.lifecycle.AndroidViewModel;
-import androidx.lifecycle.LiveData;
-import androidx.lifecycle.ViewModel;
-import androidx.lifecycle.ViewModelProvider;
+import com.fasterxml.jackson.core.type.TypeReference;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -17,7 +15,6 @@ import java.util.List;
 import java.util.Map;
 
 import io.taptalk.TapTalk.Data.Message.TAPMessageEntity;
-import io.taptalk.TapTalk.Helper.TAPTimeFormatter;
 import io.taptalk.TapTalk.Helper.TAPUtils;
 import io.taptalk.TapTalk.Listener.TAPDatabaseListener;
 import io.taptalk.TapTalk.Manager.TAPChatManager;
@@ -25,24 +22,19 @@ import io.taptalk.TapTalk.Manager.TAPDataManager;
 import io.taptalk.TapTalk.Model.TAPCustomKeyboardItemModel;
 import io.taptalk.TapTalk.Model.TAPMessageModel;
 import io.taptalk.TapTalk.Model.TAPOnlineStatusModel;
+import io.taptalk.TapTalk.Model.TAPOrderModel;
 import io.taptalk.TapTalk.Model.TAPRoomModel;
 import io.taptalk.TapTalk.Model.TAPUserModel;
 
 import static io.taptalk.TapTalk.Const.TAPDefaultConstant.LOADING_INDICATOR_LOCAL_ID;
-import static io.taptalk.TapTalk.Const.TAPDefaultConstant.MessageType.TYPE_DATE_SEPARATOR;
 import static io.taptalk.TapTalk.Const.TAPDefaultConstant.MessageType.TYPE_LOADING_MESSAGE_IDENTIFIER;
 
 public class TAPChatViewModel extends AndroidViewModel {
 
     private static final String TAG = TAPChatViewModel.class.getSimpleName();
-    private String instanceKey = "";
     private LiveData<List<TAPMessageEntity>> allMessages;
-    private Map<String, TAPMessageModel> messagePointer, unreadMessages, unreadMentions;
-    private Map<String, TAPUserModel> roomParticipantsByUsername;
-    private Map<String, List<Integer>> messageMentionIndexes;
+    private Map<String, TAPMessageModel> messagePointer, unreadMessages, ongoingOrders;
     private LinkedHashMap<String, TAPUserModel> groupTyping;
-    private LinkedHashMap<String, TAPMessageModel> dateSeparators;
-    private LinkedHashMap<String, Integer> dateSeparatorIndexes;
     private List<TAPMessageModel> messageModels, pendingRecyclerMessages;
     private List<TAPCustomKeyboardItemModel> customKeyboardItems;
     private TAPUserModel myUserModel, otherUserModel;
@@ -52,48 +44,22 @@ public class TAPChatViewModel extends AndroidViewModel {
     private Uri cameraImageUri;
     private Handler lastActivityHandler;
     private String tappedMessageLocalID;
-    private String lastUnreadMessageLocalID;
     private Integer quoteAction;
+    private String lastUnreadMessageLocalID;
     private long lastTimestamp = 0;
     private int initialUnreadCount, numUsers, containerAnimationState, firstVisibleItemIndex;
     private boolean isOnBottom, isActiveUserTyping, isOtherUserTyping, isCustomKeyboardEnabled,
             isInitialAPICallFinished, isUnreadButtonShown, isNeedToShowLoading,
-            isScrollFromKeyboard, isAllUnreadMessagesHidden, deleteGroup;
+            isScrollFromKeyboard, isAllUnreadMessagesHidden;
 
     public final int IDLE = 0;
     public final int ANIMATING = 1;
     public final int PROCESSING = 2;
 
-    public static class TAPChatViewModelFactory implements ViewModelProvider.Factory {
-        private Application application;
-        private String instanceKey;
-
-        public TAPChatViewModelFactory(Application application, String instanceKey) {
-            this.application = application;
-            this.instanceKey = instanceKey;
-        }
-
-        @NonNull
-        @Override
-        @SuppressWarnings("unchecked")
-        public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
-            return (T) new TAPChatViewModel(application, instanceKey);
-        }
-    }
-
-    public TAPChatViewModel(Application application, String instanceKey) {
+    public TAPChatViewModel(Application application) {
         super(application);
-        this.instanceKey = instanceKey;
-        allMessages = TAPDataManager.getInstance(instanceKey).getMessagesLiveData();
+        allMessages = TAPDataManager.getInstance().getMessagesLiveData();
         setOnBottom(true);
-    }
-
-    public String getInstanceKey() {
-        return instanceKey;
-    }
-
-    public void setInstanceKey(String instanceKey) {
-        this.instanceKey = instanceKey;
     }
 
     public LiveData<List<TAPMessageEntity>> getAllMessages() {
@@ -101,11 +67,11 @@ public class TAPChatViewModel extends AndroidViewModel {
     }
 
     public void delete(String messageLocalID) {
-        TAPDataManager.getInstance(instanceKey).deleteFromDatabase(messageLocalID);
+        TAPDataManager.getInstance().deleteFromDatabase(messageLocalID);
     }
 
     public void removeFromUploadingList(String messageLocalID) {
-        TAPChatManager.getInstance(instanceKey).removeUploadingMessageFromHashMap(messageLocalID);
+        TAPChatManager.getInstance().removeUploadingMessageFromHashMap(messageLocalID);
     }
 
     public Map<String, TAPMessageModel> getMessagePointer() {
@@ -131,8 +97,43 @@ public class TAPChatViewModel extends AndroidViewModel {
         }
     }
 
+
     public Map<String, TAPMessageModel> getUnreadMessages() {
         return unreadMessages == null ? unreadMessages = new LinkedHashMap<>() : unreadMessages;
+    }
+
+    public void setUnreadMessages(Map<String, TAPMessageModel> unreadMessages) {
+        this.unreadMessages = unreadMessages;
+    }
+
+    public Map<String, TAPMessageModel> getOngoingOrders() {
+        return ongoingOrders == null ? ongoingOrders = new LinkedHashMap<>() : ongoingOrders;
+    }
+
+    public void setOngoingOrders(Map<String, TAPMessageModel> ongoingOrders) {
+        this.ongoingOrders = ongoingOrders;
+    }
+
+    public TAPOrderModel getOrderModel(TAPMessageModel message) {
+        return TAPUtils.fromJSON(new TypeReference<TAPOrderModel>() {
+        }, message.getBody());
+    }
+
+    public TAPMessageModel getPreviousOrderWithSameID(TAPMessageModel message) {
+        String orderID = getOrderModel(message).getOrderID();
+        if (getOngoingOrders().containsKey(orderID)) {
+            return getOngoingOrders().get(orderID);
+        } else {
+            return null;
+        }
+    }
+
+    public void addOngoingOrderCard(TAPMessageModel message) {
+        getOngoingOrders().put(getOrderModel(message).getOrderID(), message);
+    }
+
+    public void removeOngoingOrderCard(TAPMessageModel message) {
+        getOngoingOrders().remove(getOrderModel(message).getOrderID());
     }
 
     public int getUnreadCount() {
@@ -141,67 +142,24 @@ public class TAPChatViewModel extends AndroidViewModel {
 
     public void addUnreadMessage(TAPMessageModel unreadMessage) {
         getUnreadMessages().put(unreadMessage.getLocalID(), unreadMessage);
-        if (TAPUtils.isActiveUserMentioned(unreadMessage, myUserModel)) {
-            addUnreadMention(unreadMessage);
-        }
     }
 
     public void removeUnreadMessage(String localID) {
         getUnreadMessages().remove(localID);
-        if (TAPUtils.isActiveUserMentioned(getMessagePointer().get(localID), myUserModel)) {
-            removeUnreadMention(localID);
-        }
     }
 
     public void clearUnreadMessages() {
+        if (getUnreadCount() == 0) return;
+
         getUnreadMessages().clear();
     }
 
-    public Map<String, TAPUserModel> getRoomParticipantsByUsername() {
-        return roomParticipantsByUsername == null ? roomParticipantsByUsername = new LinkedHashMap<>() : roomParticipantsByUsername;
-    }
-
-    public void addRoomParticipantByUsername(TAPUserModel user) {
-        if (null == user.getUsername() || user.getUsername().isEmpty()) {
-            return;
-        }
-        getRoomParticipantsByUsername().put(user.getUsername(), user);
-    }
-
-    public Map<String, List<Integer>> getMessageMentionIndexes() {
-        return messageMentionIndexes == null ? messageMentionIndexes = new LinkedHashMap<>() : messageMentionIndexes;
-    }
-
-    public void addMessageMentionIndexes(String localID, List<Integer> indexes) {
-        getMessageMentionIndexes().put(localID, indexes);
-    }
-
-    public Map<String, TAPMessageModel> getUnreadMentions() {
-        return unreadMentions == null ? unreadMentions = new LinkedHashMap<>() : unreadMentions;
-    }
-
-    public int getUnreadMentionCount() {
-        return getUnreadMentions().size();
-    }
-
-    public void addUnreadMention(TAPMessageModel unreadMessage) {
-        getUnreadMentions().put(unreadMessage.getLocalID(), unreadMessage);
-    }
-
-    public void removeUnreadMention(String localID) {
-        getUnreadMentions().remove(localID);
-    }
-
-    public void clearUnreadMentions() {
-        getUnreadMentions().clear();
-    }
-
     public void getMessageEntities(String roomID, TAPDatabaseListener<TAPMessageEntity> listener) {
-        TAPDataManager.getInstance(instanceKey).getMessagesFromDatabaseDesc(roomID, listener);
+        TAPDataManager.getInstance().getMessagesFromDatabaseDesc(roomID, listener);
     }
 
     public void getMessageByTimestamp(String roomID, TAPDatabaseListener listener, long lastTimestamp) {
-        TAPDataManager.getInstance(instanceKey).getMessagesFromDatabaseDesc(roomID, listener, lastTimestamp);
+        TAPDataManager.getInstance().getMessagesFromDatabaseDesc(roomID, listener, lastTimestamp);
     }
 
     public List<TAPMessageModel> getMessageModels() {
@@ -262,11 +220,11 @@ public class TAPChatViewModel extends AndroidViewModel {
 
     public void setRoom(TAPRoomModel room) {
         this.room = room;
-        TAPChatManager.getInstance(instanceKey).setActiveRoom(room);
+        TAPChatManager.getInstance().setActiveRoom(room);
     }
 
     public TAPMessageModel getQuotedMessage() {
-        return null == quotedMessage ? TAPChatManager.getInstance(instanceKey).getQuotedMessage() : quotedMessage;
+        return null == quotedMessage ? TAPChatManager.getInstance().getQuotedMessage() : quotedMessage;
     }
 
     public int getInitialUnreadCount() {
@@ -278,13 +236,13 @@ public class TAPChatViewModel extends AndroidViewModel {
     }
 
     public Integer getQuoteAction() {
-        return null == quoteAction ? null == TAPChatManager.getInstance(instanceKey).getQuoteAction() ? -1 : TAPChatManager.getInstance(instanceKey).getQuoteAction() : quoteAction;
+        return null == quoteAction ? null == TAPChatManager.getInstance().getQuoteAction() ? -1 : TAPChatManager.getInstance().getQuoteAction() : quoteAction;
     }
 
     public void setQuotedMessage(TAPMessageModel quotedMessage, int quoteAction) {
         this.quotedMessage = quotedMessage;
         this.quoteAction = quoteAction;
-        TAPChatManager.getInstance(instanceKey).setQuotedMessage(quotedMessage, quoteAction);
+        TAPChatManager.getInstance().setQuotedMessage(quotedMessage, quoteAction);
     }
 
     public String getTappedMessageLocalID() {
@@ -330,32 +288,13 @@ public class TAPChatViewModel extends AndroidViewModel {
             loadingIndicator = new TAPMessageModel();
             loadingIndicator.setType(TYPE_LOADING_MESSAGE_IDENTIFIER);
             loadingIndicator.setLocalID(LOADING_INDICATOR_LOCAL_ID);
-            loadingIndicator.setUser(TAPChatManager.getInstance(instanceKey).getActiveUser());
+            loadingIndicator.setUser(TAPChatManager.getInstance().getActiveUser());
         }
         if (updateCreated) {
             // Update created time for loading indicator to array's last message created time
             loadingIndicator.setCreated(getMessageModels().get(getMessageModels().size() - 1).getCreated() - 1L);
         }
         return loadingIndicator;
-    }
-
-    public LinkedHashMap<String, TAPMessageModel> getDateSeparators() {
-        return null == dateSeparators ? dateSeparators = new LinkedHashMap<>() : dateSeparators;
-    }
-
-    public LinkedHashMap<String, Integer> getDateSeparatorIndexes() {
-        return null == dateSeparatorIndexes ? dateSeparatorIndexes = new LinkedHashMap<>() : dateSeparatorIndexes;
-    }
-
-    public TAPMessageModel generateDateSeparator(Context context, TAPMessageModel message) {
-        return TAPMessageModel.Builder(
-                TAPTimeFormatter.getInstance().dateStampString(context, message.getCreated()),
-                getRoom(),
-                TYPE_DATE_SEPARATOR,
-                message.getCreated() - 1,
-                getMyUserModel(),
-                "",
-                null);
     }
 
     public TAPOnlineStatusModel getOnlineStatus() {
@@ -419,7 +358,7 @@ public class TAPChatViewModel extends AndroidViewModel {
     }
 
     public LinkedHashMap<String, TAPUserModel> getGroupTyping() {
-        return null == groupTyping ? groupTyping = new LinkedHashMap<>() : groupTyping;
+        return null == groupTyping? groupTyping = new LinkedHashMap<>() : groupTyping;
     }
 
     public void setGroupTyping(LinkedHashMap<String, TAPUserModel> groupTyping) {
@@ -513,7 +452,7 @@ public class TAPChatViewModel extends AndroidViewModel {
             String[] tempUserID = room.getRoomID().split("-");
             return tempUserID[0].equals(myUserModel.getUserID()) ? tempUserID[1] : tempUserID[0];
         } catch (Exception e) {
-//            Log.e(TAG, "getOtherUserID: ", e);
+            Log.e(TAG, "getOtherUserID: ", e);
             return "0";
         }
     }
@@ -539,15 +478,6 @@ public class TAPChatViewModel extends AndroidViewModel {
     }
 
     public void setAllUnreadMessagesHidden(boolean allUnreadMessagesHidden) {
-//        Log.e(TAG, "setAllUnreadMessagesHidden: " + allUnreadMessagesHidden);
         isAllUnreadMessagesHidden = allUnreadMessagesHidden;
-    }
-
-    public boolean isDeleteGroup() {
-        return deleteGroup;
-    }
-
-    public void setDeleteGroup(boolean deleteGroup) {
-        this.deleteGroup = deleteGroup;
     }
 }

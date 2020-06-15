@@ -10,7 +10,6 @@ public class TAPDefaultConstant {
 
     public static final class RoomDatabase {
         public static final int kDatabaseVersion = 7;
-        public static final String DATABASE_NAME = "message_database";
     }
 
     public static final class DatabaseType {
@@ -58,7 +57,6 @@ public class TAPDefaultConstant {
         public static final int TYPE_SYSTEM_MESSAGE = 9001;
         public static final int TYPE_UNREAD_MESSAGE_IDENTIFIER = 9002;
         public static final int TYPE_LOADING_MESSAGE_IDENTIFIER = 9003;
-        public static final int TYPE_DATE_SEPARATOR = 9005;
     }
 
     public static final class BubbleType {
@@ -79,7 +77,6 @@ public class TAPDefaultConstant {
         public static final int TYPE_BUBBLE_LOADING = 9003;
         public static final int TYPE_BUBBLE_DELETED_RIGHT = 90041;
         public static final int TYPE_BUBBLE_DELETED_LEFT = 90042;
-        public static final int TYPE_BUBBLE_DATE_SEPARATOR = 9005;
         public static final int TYPE_EMPTY = 9999;
     }
 
@@ -110,16 +107,16 @@ public class TAPDefaultConstant {
     }
 
     public static final class IntentType {
-        public static final String INTENT_TYPE_ALL = "*/*";
-        public static final String INTENT_TYPE_IMAGE = "image/*";
-        public static final String INTENT_TYPE_VIDEO = "video/*";
-        public static final String GALLERY = "Gallery";
-        public static final String SELECT_PICTURE = "Select Picture";
-        public static final String OPEN_FILE = "Open File";
+    public static final String INTENT_TYPE_ALL = "*/*";
+    public static final String INTENT_TYPE_IMAGE = "image/*";
+    public static final String INTENT_TYPE_VIDEO = "video/*";
+    public static final String GALLERY = "Gallery";
+    public static final String SELECT_PICTURE = "Select Picture";
+    public static final String OPEN_FILE = "Open File";
+
     }
 
     public static final class Extras {
-        public static final String INSTANCE_KEY = "kTAPExtraInstanceKey";
         public static final String MESSAGE = "kTAPExtraMessage";
         public static final String ROOM = "kTAPExtraRoom";
         public static final String ROOM_ID = "kTAPExtraRoomID";
@@ -144,7 +141,6 @@ public class TAPDefaultConstant {
         public static final String MOBILE_NUMBER = "kTAPExtraMobileNumber";
         public static final String JUMP_TO_MESSAGE = "kTAPJumpToMessage";
         public static final String CLOSE_ACTIVITY = "kTAPCloseActivity";
-        public static final String IS_NON_PARTICIPANT_USER_PROFILE = "kTAPIsNotParticipantUserProfile";
     }
 
     public static final class RequestCode {
@@ -235,13 +231,11 @@ public class TAPDefaultConstant {
     }
 
     public static final class ClientErrorCodes {
-        public static final String ERROR_CODE_INIT_TAPTALK = "90000";
         public static final String ERROR_CODE_ACTIVE_USER_NOT_FOUND = "90001";
         public static final String ERROR_CODE_ACCESS_TOKEN_UNAVAILABLE = "90002";
         public static final String ERROR_CODE_ALREADY_CONNECTED = "90003";
         public static final String ERROR_CODE_NO_INTERNET = "90004";
         public static final String ERROR_CODE_INVALID_AUTH_TICKET = "90005";
-        public static final String ERROR_CODE_NOT_AUTHENTICATED = "90006";
         public static final String ERROR_CODE_GROUP_DELETED = "90101";
         public static final String ERROR_CODE_ADMIN_REQUIRED = "90102";
         public static final String ERROR_CODE_URI_NOT_FOUND = "90301";
@@ -255,13 +249,11 @@ public class TAPDefaultConstant {
     }
 
     public static final class ClientErrorMessages {
-        public static final String ERROR_MESSAGE_INIT_TAPTALK = "Please initialize TapTalk library, read documentation for detailed information.";
         public static final String ERROR_MESSAGE_ACTIVE_USER_NOT_FOUND = "Active user not found";
         public static final String ERROR_MESSAGE_ACCESS_TOKEN_UNAVAILABLE = "Access token is not available, call authenticate() before connecting";
         public static final String ERROR_MESSAGE_ALREADY_CONNECTED = "Already connected";
         public static final String ERROR_MESSAGE_NO_INTERNET = "No internet connection";
         public static final String ERROR_MESSAGE_INVALID_AUTH_TICKET = "Invalid auth ticket";
-        public static final String ERROR_MESSAGE_NOT_AUTHENTICATED = "User is not authenticated";
         public static final String ERROR_MESSAGE_GROUP_DELETED = "The group has already been deleted";
         public static final String ERROR_MESSAGE_ADMIN_REQUIRED = "Please assign another admin before leaving";
         public static final String ERROR_MESSAGE_URI_NOT_FOUND = "Uri is required in message data";
@@ -314,7 +306,6 @@ public class TAPDefaultConstant {
         public static final String LongPressLink = "kTAPLongPressLink";
         public static final String LongPressEmail = "kTAPLongPressEmail";
         public static final String LongPressPhone = "kTAPLongPressPhone";
-        public static final String LongPressMention = "kTAPLongPressMention";
     }
 
     public static final class TokenHeaderConst {
@@ -410,7 +401,6 @@ public class TAPDefaultConstant {
         public static final int MENU_DEMOTE_ADMIN = 11;
         public static final int MENU_REMOVE_MEMBER = 12;
         public static final int MENU_DELETE_GROUP = 13;
-        public static final int MENU_EDIT_GROUP = 14;
     }
 
     public static final String K_REFRESH_TOKEN = "kTAPRefreshToken";
@@ -450,8 +440,8 @@ public class TAPDefaultConstant {
     public static final int THUMB_MAX_DIMENSION = 20;
     public static final int IMAGE_COMPRESSION_QUALITY = 50;
 
-    public static final long TYPING_EMIT_DELAY = 7000L;
-    public static final long TYPING_INDICATOR_TIMEOUT = 10000L;
+    public static final long TYPING_EMIT_DELAY = 10000L;
+    public static final long TYPING_INDICATOR_TIMEOUT = 15000L;
 
     public static final String SCAN_RESULT = "kTAPScanResult";
     public static final String ADDED_CONTACT = "kTAPAddedContact";
@@ -462,7 +452,6 @@ public class TAPDefaultConstant {
     public static final String CONTACT_LIST = "kTAPContactList";
     public static final String REFRESH_TOKEN_RENEWED = "kTAPRefreshTokenRenewed";
     public static final String RELOAD_ROOM_LIST = "kTAPReloadRoomList";
-    public static final String CLEAR_ROOM_LIST = "kTAPClearRoomList";
     public static final String CLEAR_ROOM_LIST_BADGE = "kTAPClearRoomListBadge";
     public static final String RELOAD_PROFILE_PICTURE = "kTAPReloadProfilePicture";
     public static final String LAST_CALL_COUNTRY_TIMESTAMP = "kLastCallCountryTimestamp";
@@ -472,6 +461,4 @@ public class TAPDefaultConstant {
     public static final String MY_COUNTRY_FLAG_URL = "kMyCountryFlagUrl";
     public static final String UNREAD_INDICATOR_LOCAL_ID = "kTAPUnreadIndicatorLocalIdentity";
     public static final String LOADING_INDICATOR_LOCAL_ID = "kTAPFetchingOlderMessagesLocalID";
-    public static final String RIGHT_BUBBLE_SPACE_APPEND = "\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0";
-    public static final String LEFT_BUBBLE_SPACE_APPEND = "\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0";
 }

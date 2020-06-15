@@ -1,9 +1,8 @@
 package io.taptalk.TapTalk.Manager;
 
-import androidx.annotation.Keep;
+import android.support.annotation.Keep;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import io.taptalk.TapTalk.API.View.TAPDefaultDataView;
@@ -19,43 +18,22 @@ import io.taptalk.TapTalk.Model.ResponseModel.TAPGetUserResponse;
 import io.taptalk.TapTalk.Model.TAPErrorModel;
 import io.taptalk.TapTalk.Model.TAPUserModel;
 
-import static io.taptalk.TapTalk.Const.TAPDefaultConstant.ClientErrorCodes.ERROR_CODE_INIT_TAPTALK;
 import static io.taptalk.TapTalk.Const.TAPDefaultConstant.ClientErrorCodes.ERROR_CODE_OTHERS;
-import static io.taptalk.TapTalk.Const.TAPDefaultConstant.ClientErrorMessages.ERROR_MESSAGE_INIT_TAPTALK;
 
 @Keep
 public class TapCoreContactManager {
 
-    private static HashMap<String, TapCoreContactManager> instances;
-
-    private String instanceKey = "";
-
-    public TapCoreContactManager(String instanceKey) {
-        this.instanceKey = instanceKey;
-    }
+    private static TapCoreContactManager instance;
 
     public static TapCoreContactManager getInstance() {
-        return getInstance("");
-    }
-
-    public static TapCoreContactManager getInstance(String instanceKey) {
-        if (!getInstances().containsKey(instanceKey)) {
-            TapCoreContactManager instance = new TapCoreContactManager(instanceKey);
-            getInstances().put(instanceKey, instance);
-        }
-        return getInstances().get(instanceKey);
-    }
-
-    private static HashMap<String, TapCoreContactManager> getInstances() {
-        return null == instances ? instances = new HashMap<>() : instances;
+        return null == instance ? instance = new TapCoreContactManager() : instance;
     }
 
     public void getAllUserContacts(TapCoreGetMultipleContactListener listener) {
         if (!TapTalk.checkTapTalkInitialized()) {
-            listener.onError(ERROR_CODE_INIT_TAPTALK, ERROR_MESSAGE_INIT_TAPTALK);
             return;
         }
-        TAPDataManager.getInstance(instanceKey).getMyContactList(new TAPDatabaseListener<TAPUserModel>() {
+        TAPDataManager.getInstance().getMyContactList(new TAPDatabaseListener<TAPUserModel>() {
             @Override
             public void onSelectFinished(List<TAPUserModel> entities) {
                 if (null != listener) {
@@ -74,16 +52,15 @@ public class TapCoreContactManager {
 
     public void getUserDataWithUserID(String userID, TapCoreGetContactListener listener) {
         if (!TapTalk.checkTapTalkInitialized()) {
-            listener.onError(ERROR_CODE_INIT_TAPTALK, ERROR_MESSAGE_INIT_TAPTALK);
             return;
         }
-        TAPDataManager.getInstance(instanceKey).getUserByIdFromApi(userID, new TAPDefaultDataView<TAPGetUserResponse>() {
+        TAPDataManager.getInstance().getUserByIdFromApi(userID, new TAPDefaultDataView<TAPGetUserResponse>() {
             @Override
             public void onSuccess(TAPGetUserResponse response) {
                 if (null != listener) {
                     listener.onSuccess(response.getUser());
                 }
-                TAPContactManager.getInstance(instanceKey).updateUserData(response.getUser());
+                TAPContactManager.getInstance().updateUserData(response.getUser());
             }
 
             @Override
@@ -104,16 +81,15 @@ public class TapCoreContactManager {
 
     public void getUserDataWithXCUserID(String xcUserID, TapCoreGetContactListener listener) {
         if (!TapTalk.checkTapTalkInitialized()) {
-            listener.onError(ERROR_CODE_INIT_TAPTALK, ERROR_MESSAGE_INIT_TAPTALK);
             return;
         }
-        TAPDataManager.getInstance(instanceKey).getUserByXcUserIdFromApi(xcUserID, new TAPDefaultDataView<TAPGetUserResponse>() {
+        TAPDataManager.getInstance().getUserByXcUserIdFromApi(xcUserID, new TAPDefaultDataView<TAPGetUserResponse>() {
             @Override
             public void onSuccess(TAPGetUserResponse response) {
                 if (null != listener) {
                     listener.onSuccess(response.getUser());
                 }
-                TAPContactManager.getInstance(instanceKey).updateUserData(response.getUser());
+                TAPContactManager.getInstance().updateUserData(response.getUser());
             }
 
             @Override
@@ -136,22 +112,21 @@ public class TapCoreContactManager {
         if (!TapTalk.checkTapTalkInitialized()) {
             return;
         }
-        TAPContactManager.getInstance(instanceKey).updateUserData(user);
+        TAPContactManager.getInstance().updateUserData(user);
     }
 
     public void addToTapTalkContactsWithUserID(String userID, TapCoreGetContactListener listener) {
         if (!TapTalk.checkTapTalkInitialized()) {
-            listener.onError(ERROR_CODE_INIT_TAPTALK, ERROR_MESSAGE_INIT_TAPTALK);
             return;
         }
-        TAPDataManager.getInstance(instanceKey).addContactApi(userID, new TAPDefaultDataView<TAPAddContactResponse>() {
+        TAPDataManager.getInstance().addContactApi(userID, new TAPDefaultDataView<TAPAddContactResponse>() {
             @Override
             public void onSuccess(TAPAddContactResponse response) {
                 if (null != listener) {
                     listener.onSuccess(response.getUser());
                 }
                 TAPUserModel newContact = response.getUser().setUserAsContact();
-                TAPContactManager.getInstance(instanceKey).updateUserData(newContact);
+                TAPContactManager.getInstance().updateUserData(newContact);
             }
 
             @Override
@@ -172,12 +147,11 @@ public class TapCoreContactManager {
 
     public void addToTapTalkContactsWithPhoneNumber(String phoneNumber, TapCoreGetContactListener listener) {
         if (!TapTalk.checkTapTalkInitialized()) {
-            listener.onError(ERROR_CODE_INIT_TAPTALK, ERROR_MESSAGE_INIT_TAPTALK);
             return;
         }
         List<String> phoneNumberList = new ArrayList<>();
         phoneNumberList.add(phoneNumber);
-        TAPDataManager.getInstance(instanceKey).addContactByPhone(phoneNumberList, new TAPDefaultDataView<TAPAddContactByPhoneResponse>() {
+        TAPDataManager.getInstance().addContactByPhone(phoneNumberList, new TAPDefaultDataView<TAPAddContactByPhoneResponse>() {
             @Override
             public void onSuccess(TAPAddContactByPhoneResponse response) {
                 if (null != listener) {
@@ -185,13 +159,13 @@ public class TapCoreContactManager {
                 }
                 List<TAPUserModel> users = new ArrayList<>();
                 for (TAPUserModel contact : response.getUsers()) {
-                    if (!contact.getUserID().equals(TAPChatManager.getInstance(instanceKey).getActiveUser().getUserID())) {
+                    if (!contact.getUserID().equals(TAPChatManager.getInstance().getActiveUser().getUserID())) {
                         contact.setUserAsContact();
                         users.add(contact);
                     }
                 }
-                TAPDataManager.getInstance(instanceKey).insertMyContactToDatabase(users);
-                TAPContactManager.getInstance(instanceKey).updateUserData(users);
+                TAPDataManager.getInstance().insertMyContactToDatabase(users);
+                TAPContactManager.getInstance().updateUserData(users);
             }
 
             @Override
@@ -212,16 +186,15 @@ public class TapCoreContactManager {
 
     public void removeFromTapTalkContacts(String userID, TapCommonListener listener) {
         if (!TapTalk.checkTapTalkInitialized()) {
-            listener.onError(ERROR_CODE_INIT_TAPTALK, ERROR_MESSAGE_INIT_TAPTALK);
             return;
         }
-        TAPDataManager.getInstance(instanceKey).removeContactApi(userID, new TAPDefaultDataView<TAPCommonResponse>() {
+        TAPDataManager.getInstance().removeContactApi(userID, new TAPDefaultDataView<TAPCommonResponse>() {
             @Override
             public void onSuccess(TAPCommonResponse response) {
                 if (null != listener) {
                     listener.onSuccess(response.getMessage());
                 }
-                TAPContactManager.getInstance(instanceKey).removeFromContacts(userID);
+                TAPContactManager.getInstance().removeFromContacts(userID);
             }
 
             @Override

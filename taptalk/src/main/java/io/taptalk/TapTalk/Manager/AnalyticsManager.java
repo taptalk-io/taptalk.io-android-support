@@ -14,36 +14,21 @@ import io.taptalk.TapTalk.Helper.TapTalk;
 
 public class AnalyticsManager {
 
-    private static HashMap<String, AnalyticsManager> instances;
+    private static AnalyticsManager instance;
     private MixpanelAPI mixpanel;
 
-    private String instanceKey = "";
-
-    public static AnalyticsManager getInstance(String instanceKey) {
-        if (!getInstances().containsKey(instanceKey)) {
-            AnalyticsManager instance = new AnalyticsManager(instanceKey);
-            getInstances().put(instanceKey, instance);
-        }
-        return getInstances().get(instanceKey);
-    }
-
-    private static HashMap<String, AnalyticsManager> getInstances() {
-        return null == instances ? instances = new HashMap<>() : instances;
-    }
-
-    public AnalyticsManager(String instanceKey) {
-        this.instanceKey = instanceKey;
+    public static AnalyticsManager getInstance() {
+        return instance == null ? (instance = new AnalyticsManager()) : instance;
     }
 
     public void identifyUser() {
-        if (TapTalk.appContext.getPackageName().toLowerCase().startsWith("io.taptalk.taptalksample") && !TapTalk.mixpanelToken.equals("") && null != TAPChatManager.getInstance(instanceKey).getActiveUser()) {
+        if (TapTalk.appContext.getPackageName().toLowerCase().startsWith("io.taptalk.taptalksample") && !TapTalk.mixpanelToken.equals("") && null != TAPChatManager.getInstance().getActiveUser()) {
             mixpanel = MixpanelAPI.getInstance(TapTalk.appContext, TapTalk.mixpanelToken);
-            mixpanel.identify(TAPChatManager.getInstance(instanceKey).getActiveUser().getUserID());
-            mixpanel.getPeople().identify(TAPChatManager.getInstance(instanceKey).getActiveUser().getUserID());
-            mixpanel.getPeople().set("UserID", TAPChatManager.getInstance(instanceKey).getActiveUser().getUserID());
-            mixpanel.getPeople().set("name", TAPChatManager.getInstance(instanceKey).getActiveUser().getName());
-            mixpanel.getPeople().set("UserFullName", TAPChatManager.getInstance(instanceKey).getActiveUser().getName());
-            mixpanel.getPeople().set("userPhoneNumber", TAPChatManager.getInstance(instanceKey).getActiveUser().getPhoneNumber());
+            mixpanel.identify(TAPChatManager.getInstance().getActiveUser().getUserID());
+            mixpanel.getPeople().identify(TAPChatManager.getInstance().getActiveUser().getUserID());
+            mixpanel.getPeople().set("UserID", TAPChatManager.getInstance().getActiveUser().getUserID());
+            mixpanel.getPeople().set("UserFullName", TAPChatManager.getInstance().getActiveUser().getName());
+            mixpanel.getPeople().set("userPhoneNumber", TAPChatManager.getInstance().getActiveUser().getPhoneNumber());
         }
     }
 
@@ -121,10 +106,9 @@ public class AnalyticsManager {
     private JSONObject generateDefaultData() {
         JSONObject metadata = new JSONObject();
         try {
-            metadata.put("UserID", TAPChatManager.getInstance(instanceKey).getActiveUser().getUserID());
-            metadata.put("UserFullName", TAPChatManager.getInstance(instanceKey).getActiveUser().getName());
-            metadata.put("userPhoneNumber", TAPChatManager.getInstance(instanceKey).getActiveUser().getPhoneNumber());
-            metadata.put("uuid", TapTalk.getDeviceId());
+            metadata.put("UserID", TAPChatManager.getInstance().getActiveUser().getUserID());
+            metadata.put("UserFullName", TAPChatManager.getInstance().getActiveUser().getName());
+            metadata.put("userPhoneNumber", TAPChatManager.getInstance().getActiveUser().getPhoneNumber());
         } catch (Exception e) {
             return metadata;
         }

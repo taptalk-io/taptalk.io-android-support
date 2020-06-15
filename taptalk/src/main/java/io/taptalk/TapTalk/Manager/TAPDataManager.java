@@ -1,13 +1,12 @@
 package io.taptalk.TapTalk.Manager;
 
 import android.app.Application;
+import android.arch.lifecycle.LiveData;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
-
-import androidx.lifecycle.LiveData;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.orhanobut.hawk.Hawk;
 
@@ -25,7 +24,6 @@ import io.taptalk.TapTalk.API.RequestBody.ProgressRequestBody;
 import io.taptalk.TapTalk.API.Subscriber.TAPBaseSubscriber;
 import io.taptalk.TapTalk.API.Subscriber.TAPDefaultSubscriber;
 import io.taptalk.TapTalk.API.View.TAPDefaultDataView;
-import io.taptalk.TapTalk.BuildConfig;
 import io.taptalk.TapTalk.Data.Message.TAPMessageEntity;
 import io.taptalk.TapTalk.Data.RecentSearch.TAPRecentSearchEntity;
 import io.taptalk.TapTalk.Helper.TAPUtils;
@@ -58,6 +56,7 @@ import io.taptalk.TapTalk.Model.TAPErrorModel;
 import io.taptalk.TapTalk.Model.TAPRoomModel;
 import io.taptalk.TapTalk.Model.TAPUserModel;
 import io.taptalk.TapTalk.Model.TapConfigs;
+import io.taptalk.Taptalk.BuildConfig;
 import okhttp3.ResponseBody;
 
 import static io.taptalk.TapTalk.Const.TAPDefaultConstant.CustomHeaderKey.APP_ID;
@@ -99,26 +98,11 @@ import static io.taptalk.TapTalk.Const.TAPDefaultConstant.UploadBroadcastEvent.U
 
 public class TAPDataManager {
     private static final String TAG = TAPDataManager.class.getSimpleName();
-    private static HashMap<String, TAPDataManager> instances;
-
-    private String instanceKey = "";
-    private TAPDefaultSubscriber validateSub;
+    private static TAPDataManager instance;
     private boolean isNeedToQueryUpdateRoomList;
 
-    public static TAPDataManager getInstance(String instanceKey) {
-        if (!getInstances().containsKey(instanceKey)) {
-            TAPDataManager instance = new TAPDataManager(instanceKey);
-            getInstances().put(instanceKey, instance);
-        }
-        return getInstances().get(instanceKey);
-    }
-
-    private static HashMap<String, TAPDataManager> getInstances() {
-        return null == instances ? instances = new HashMap<>() : instances;
-    }
-
-    public TAPDataManager(String instanceKey) {
-        this.instanceKey = instanceKey;
+    public static TAPDataManager getInstance() {
+        return instance == null ? (instance = new TAPDataManager()) : instance;
     }
 
     public boolean isNeedToQueryUpdateRoomList() {
@@ -135,18 +119,18 @@ public class TAPDataManager {
      * ==========================================================================================
      */
     public void deleteAllManagerData() {
-        setNeedToQueryUpdateRoomList(false);
         TAPCacheManager.getInstance(TapTalk.appContext).clearCache();
-        TAPChatManager.getInstance(instanceKey).resetChatManager();
-        TAPContactManager.getInstance(instanceKey).clearUserDataMap();
-        TAPContactManager.getInstance(instanceKey).clearUserMapByPhoneNumber();
-        TAPContactManager.getInstance(instanceKey).resetMyCountryCode();
-        TAPContactManager.getInstance(instanceKey).resetContactSyncPermissionAsked();
-        TAPContactManager.getInstance(instanceKey).resetContactSyncAllowedByUser();
-        TAPFileDownloadManager.getInstance(instanceKey).resetTAPFileDownloadManager();
-        TAPFileUploadManager.getInstance(instanceKey).resetFileUploadManager();
-        TAPNotificationManager.getInstance(instanceKey).clearAllNotificationMessageMap();
-        TAPMessageStatusManager.getInstance(instanceKey).resetMessageStatusManager();
+        TAPChatManager.getInstance().resetChatManager();
+        TAPContactManager.getInstance().clearUserDataMap();
+        TAPContactManager.getInstance().clearUserMapByPhoneNumber();
+        TAPContactManager.getInstance().resetMyCountryCode();
+        TAPContactManager.getInstance().resetContactSyncPermissionAsked();
+        TAPContactManager.getInstance().resetContactSyncAllowedByUser();
+        setNeedToQueryUpdateRoomList(false);
+        TAPFileDownloadManager.getInstance().resetTAPFileDownloadManager();
+        TAPFileUploadManager.getInstance().resetFileUploadManager();
+        TAPNotificationManager.getInstance().clearAllNotificationMessageMap();
+        TAPMessageStatusManager.getInstance().resetMessageStatusManager();
     }
 
     /**
@@ -156,43 +140,43 @@ public class TAPDataManager {
      */
 
     private void saveBooleanPreference(String key, boolean bool) {
-        Hawk.put(instanceKey + key, bool);
+        Hawk.put(key, bool);
     }
 
     private void saveStringPreference(String key, String string) {
-        Hawk.put(instanceKey + key, string);
+        Hawk.put(key, string);
     }
 
     private void saveFloatPreference(String key, Float flt) {
-        Hawk.put(instanceKey + key, flt);
+        Hawk.put(key, flt);
     }
 
     private void saveLongTimestampPreference(String key, Long timestamp) {
-        Hawk.put(instanceKey + key, timestamp);
+        Hawk.put(key, timestamp);
     }
 
     private Boolean getBooleanPreference(String key) {
-        return Hawk.get(instanceKey + key, false);
+        return Hawk.get(key, false);
     }
 
     private String getStringPreference(String key) {
-        return Hawk.get(instanceKey + key, "");
+        return Hawk.get(key, "");
     }
 
     private Float getFloatPreference(String key) {
-        return Hawk.get(instanceKey + key, null);
+        return Hawk.get(key, null);
     }
 
     private Long getLongTimestampPreference(String key) {
-        return Hawk.get(instanceKey + key, 0L);
+        return Hawk.get(key, 0L);
     }
 
     private Boolean checkPreferenceKeyAvailable(String key) {
-        return Hawk.contains(instanceKey + key);
+        return Hawk.contains(key);
     }
 
     private void removePreference(String key) {
-        Hawk.delete(instanceKey + key);
+        Hawk.delete(key);
     }
 
     /**
@@ -230,27 +214,27 @@ public class TAPDataManager {
      * PROJECT CONFIGS
      */
     public Map<String, String> getCoreConfigs() {
-        return Hawk.get(instanceKey + CORE, new HashMap<>());
+        return Hawk.get(CORE, new HashMap<>());
     }
 
     public void saveCoreConfigs(Map<String, String> coreProjectConfigs) {
-        Hawk.put(instanceKey + CORE, coreProjectConfigs);
+        Hawk.put(CORE, coreProjectConfigs);
     }
 
     public Map<String, String> getProjectConfigs() {
-        return Hawk.get(instanceKey + PROJECT, new HashMap<>());
+        return Hawk.get(PROJECT, new HashMap<>());
     }
 
     public void saveProjectConfigs(Map<String, String> coreProjectConfigs) {
-        Hawk.put(instanceKey + PROJECT, coreProjectConfigs);
+        Hawk.put(PROJECT, coreProjectConfigs);
     }
 
     public Map<String, String> getCustomConfigs() {
-        return Hawk.get(instanceKey + CUSTOM, new HashMap<>());
+        return Hawk.get(CUSTOM, new HashMap<>());
     }
 
     public void saveCustomConfigs(Map<String, String> coreProjectConfigs) {
-        Hawk.put(instanceKey + CUSTOM, coreProjectConfigs);
+        Hawk.put(CUSTOM, coreProjectConfigs);
     }
 
     public void removeConfigs() {
@@ -263,11 +247,11 @@ public class TAPDataManager {
      * COUNTRY LIST
      */
     public ArrayList<TAPCountryListItem> getCountryList() {
-        return Hawk.get(instanceKey + K_COUNTRY_LIST, new ArrayList<>());
+        return Hawk.get(K_COUNTRY_LIST, new ArrayList<>());
     }
 
     public void saveCountryList(ArrayList<TAPCountryListItem> countries) {
-        Hawk.put(instanceKey + K_COUNTRY_LIST, countries);
+        Hawk.put(K_COUNTRY_LIST, countries);
     }
 
     public void removeCountryList() {
@@ -297,12 +281,12 @@ public class TAPDataManager {
     }
 
     public TAPUserModel getActiveUser() {
-        return Hawk.get(instanceKey + K_USER, null);
+        return Hawk.get(K_USER, null);
     }
 
     public void saveActiveUser(TAPUserModel user) {
-        Hawk.put(instanceKey + K_USER, user);
-        TAPChatManager.getInstance(instanceKey).setActiveUser(user);
+        Hawk.put(K_USER, user);
+        TAPChatManager.getInstance().setActiveUser(user);
     }
 
     public void removeActiveUser() {
@@ -400,7 +384,7 @@ public class TAPDataManager {
     }
 
     private HashMap<String, Long> getLastUpdatedMessageTimestampMap() {
-        return Hawk.get(instanceKey + K_LAST_UPDATED, null);
+        return Hawk.get(K_LAST_UPDATED, null);
     }
 
     private void saveLastUpdatedMessageTimestampMap(String roomID, long lastUpdated) {
@@ -410,7 +394,7 @@ public class TAPDataManager {
         else tempLastUpdated = new LinkedHashMap<>();
 
         tempLastUpdated.put(roomID, lastUpdated);
-        Hawk.put(instanceKey + K_LAST_UPDATED, tempLastUpdated);
+        Hawk.put(K_LAST_UPDATED, tempLastUpdated);
     }
 
     private void removeLastUpdatedMessageTimestampMap() {
@@ -422,11 +406,11 @@ public class TAPDataManager {
      */
 
     public HashMap<String, Long> getUserLastActivityMap() {
-        return Hawk.get(instanceKey + K_USER_LAST_ACTIVITY);
+        return Hawk.get(K_USER_LAST_ACTIVITY);
     }
 
     public void saveUserLastActivityMap(HashMap<String, Long> userLastActivityMap) {
-        Hawk.put(instanceKey + K_USER_LAST_ACTIVITY, userLastActivityMap);
+        Hawk.put(K_USER_LAST_ACTIVITY, userLastActivityMap);
     }
 
     public void removeUserLastActivityMap() {
@@ -437,11 +421,11 @@ public class TAPDataManager {
      * SAVE GROUP DATA
      */
     public HashMap<String, TAPRoomModel> getRoomDataMap() {
-        return Hawk.get(instanceKey + K_GROUP_DATA_MAP);
+        return Hawk.get(K_GROUP_DATA_MAP);
     }
 
     public void saveRoomDataMap(HashMap<String, TAPRoomModel> roomDataMap) {
-        Hawk.put(instanceKey + K_GROUP_DATA_MAP, roomDataMap);
+        Hawk.put(K_GROUP_DATA_MAP, roomDataMap);
     }
 
     public void removeRoomDataMap() {
@@ -449,7 +433,7 @@ public class TAPDataManager {
     }
 
     public boolean isRoomDataMapAvailable() {
-        return Hawk.contains(K_GROUP_DATA_MAP) && null != Hawk.get(instanceKey + K_GROUP_DATA_MAP);
+        return Hawk.contains(K_GROUP_DATA_MAP) && null != Hawk.get(K_GROUP_DATA_MAP);
     }
 
     /**
@@ -485,7 +469,7 @@ public class TAPDataManager {
      */
 
     private HashMap<String, Boolean> getChatRoomContactActionsMap() {
-        return Hawk.get(instanceKey + K_CHAT_ROOM_CONTACT_ACTION, new HashMap<>());
+        return Hawk.get(K_CHAT_ROOM_CONTACT_ACTION, new HashMap<>());
     }
 
     public boolean isChatRoomContactActionDismissed(String roomID) {
@@ -496,7 +480,7 @@ public class TAPDataManager {
     public void saveChatRoomContactActionDismissed(String roomID) {
         HashMap<String, Boolean> map = getChatRoomContactActionsMap();
         map.put(roomID, true);
-        Hawk.put(instanceKey + K_CHAT_ROOM_CONTACT_ACTION, map);
+        Hawk.put(K_CHAT_ROOM_CONTACT_ACTION, map);
     }
 
     public void removeChatRoomContactActionDismissed() {
@@ -512,7 +496,7 @@ public class TAPDataManager {
 
     public void saveMyCountryCode(String myCountryCode) {
         saveStringPreference(MY_COUNTRY_CODE, myCountryCode);
-        TAPContactManager.getInstance(instanceKey).setMyCountryCode(myCountryCode);
+        TAPContactManager.getInstance().setMyCountryCode(myCountryCode);
     }
 
     public void removeMyCountryCode() {
@@ -551,11 +535,11 @@ public class TAPDataManager {
      * FILE PROVIDER PATH
      */
     public HashMap<String, String> getFileProviderPathMap() {
-        return Hawk.get(instanceKey + K_FILE_PATH_MAP, null);
+        return Hawk.get(K_FILE_PATH_MAP, null);
     }
 
     public void saveFileProviderPathMap(HashMap<String, String> fileProviderPathMap) {
-        Hawk.put(instanceKey + K_FILE_PATH_MAP, fileProviderPathMap);
+        Hawk.put(K_FILE_PATH_MAP, fileProviderPathMap);
     }
 
     public void removeFileProviderPathMap() {
@@ -566,11 +550,11 @@ public class TAPDataManager {
      * FILE URI CACHE
      */
     public HashMap<String, HashMap<String, String>> getFileMessageUriMap() {
-        return Hawk.get(instanceKey + K_FILE_URI_MAP, null);
+        return Hawk.get(K_FILE_URI_MAP, null);
     }
 
     public void saveFileMessageUriMap(HashMap<String, HashMap<String, String>> fileUriMap) {
-        Hawk.put(instanceKey + K_FILE_URI_MAP, fileUriMap);
+        Hawk.put(K_FILE_URI_MAP, fileUriMap);
     }
 
     public void removeFileMessageUriMap() {
@@ -685,16 +669,12 @@ public class TAPDataManager {
             if (null == messageData) {
                 return;
             }
-            Uri fileMessageUri = TAPFileDownloadManager.getInstance(instanceKey).getFileMessageUri(
-                    message.getRoomID(), (String) messageData.get(FILE_ID));
-            if (null != fileMessageUri && "content".equals(fileMessageUri.getScheme()) &&
-                    null != fileMessageUri.getPath() &&
-                    fileMessageUri.getPath().contains(TapTalk.getClientAppName(instanceKey))) {
+            Uri fileMessageUri = TAPFileDownloadManager.getInstance().getFileMessageUri(message.getRoomID(), (String) messageData.get(FILE_ID));
+            if (null != fileMessageUri && "content".equals(fileMessageUri.getScheme()) && null != fileMessageUri.getPath() && fileMessageUri.getPath().contains(TapTalk.getClientAppName())) {
                 try {
                     // Delete file from TapTalk folder
                     TapTalk.appContext.getContentResolver().delete(fileMessageUri, null, null);
-                    TAPFileDownloadManager.getInstance(instanceKey).removeFileMessageUri(
-                            message.getRoomID(), (String) messageData.get(FILE_ID));
+                    TAPFileDownloadManager.getInstance().removeFileMessageUri(message.getRoomID(), (String) messageData.get(FILE_ID));
                 } catch (IllegalArgumentException e) {
                     if (BuildConfig.DEBUG) {
                         Log.e(TAG, "deletePhysicalFile: " + e.getMessage());
@@ -763,252 +743,247 @@ public class TAPDataManager {
 
     // initialized Database Managernya yang di panggil di class Homing Pigeon
     public void initDatabaseManager(String databaseType, Application application) {
-        TAPDatabaseManager.getInstance(instanceKey).setRepository(databaseType, application);
+        TAPDatabaseManager.getInstance().setRepository(databaseType, application);
     }
 
     // Message
     public void deleteMessage(List<TAPMessageEntity> messageEntities, TAPDatabaseListener listener) {
-        TAPDatabaseManager.getInstance(instanceKey).deleteMessage(new ArrayList<>(messageEntities), listener);
+        TAPDatabaseManager.getInstance().deleteMessage(new ArrayList<>(messageEntities), listener);
     }
 
     public void deleteRoomMessageBeforeTimestamp(String roomID, long minimumTimestamp, TAPDatabaseListener listener) {
-        TAPDatabaseManager.getInstance(instanceKey).deleteRoomMessageBeforeTimestamp(roomID, minimumTimestamp, listener);
+        TAPDatabaseManager.getInstance().deleteRoomMessageBeforeTimestamp(roomID, minimumTimestamp, listener);
     }
 
     public void insertToDatabase(TAPMessageEntity messageEntity) {
-        TAPDatabaseManager.getInstance(instanceKey).insert(messageEntity);
+        TAPDatabaseManager.getInstance().insert(messageEntity);
     }
 
     public void insertToDatabase(List<TAPMessageEntity> messageEntities, boolean isClearSaveMessages) {
-        TAPDatabaseManager.getInstance(instanceKey).insert(new ArrayList<>(messageEntities), isClearSaveMessages);
+        TAPDatabaseManager.getInstance().insert(new ArrayList<>(messageEntities), isClearSaveMessages);
     }
 
     public void insertToDatabase(List<TAPMessageEntity> messageEntities, boolean isClearSaveMessages, TAPDatabaseListener listener) {
-        TAPDatabaseManager.getInstance(instanceKey).insert(new ArrayList<>(messageEntities), isClearSaveMessages, listener);
+        TAPDatabaseManager.getInstance().insert(new ArrayList<>(messageEntities), isClearSaveMessages, listener);
     }
 
     public void deleteFromDatabase(String messageLocalID) {
-        TAPDatabaseManager.getInstance(instanceKey).delete(messageLocalID);
+        TAPDatabaseManager.getInstance().delete(messageLocalID);
     }
 
     public void updateSendingMessageToFailed() {
-        TAPDatabaseManager.getInstance(instanceKey).updatePendingStatus();
+        TAPDatabaseManager.getInstance().updatePendingStatus();
     }
 
     public void updateSendingMessageToFailed(String localID) {
-        TAPDatabaseManager.getInstance(instanceKey).updatePendingStatus(localID);
+        TAPDatabaseManager.getInstance().updatePendingStatus(localID);
     }
 
     public void updateFailedMessageToSending(String localID) {
-        TAPDatabaseManager.getInstance(instanceKey).updateFailedStatusToSending(localID);
+        TAPDatabaseManager.getInstance().updateFailedStatusToSending(localID);
     }
 
     public void updateMessageAsReadInDatabase(String messageID) {
-        TAPDatabaseManager.getInstance(instanceKey).updateMessageAsRead(messageID);
+        TAPDatabaseManager.getInstance().updateMessageAsRead(messageID);
     }
 
     public void updateMessagesAsReadInDatabase(List<String> messageIDs) {
-        TAPDatabaseManager.getInstance(instanceKey).updateMessagesAsRead(messageIDs);
+        TAPDatabaseManager.getInstance().updateMessagesAsRead(messageIDs);
     }
 
     public LiveData<List<TAPMessageEntity>> getMessagesLiveData() {
-        return TAPDatabaseManager.getInstance(instanceKey).getMessagesLiveData();
+        return TAPDatabaseManager.getInstance().getMessagesLiveData();
     }
 
     public void getAllMessagesInRoomFromDatabase(String roomID, TAPDatabaseListener<TAPMessageEntity> listener) {
-        TAPDatabaseManager.getInstance(instanceKey).getAllMessagesInRoom(roomID, listener);
+        TAPDatabaseManager.getInstance().getAllMessagesInRoom(roomID, listener);
     }
 
     public void getMessagesFromDatabaseDesc(String roomID, TAPDatabaseListener<TAPMessageEntity> listener) {
-        TAPDatabaseManager.getInstance(instanceKey).getMessagesDesc(roomID, listener);
+        TAPDatabaseManager.getInstance().getMessagesDesc(roomID, listener);
     }
 
     public void getMessagesFromDatabaseDesc(String roomID, TAPDatabaseListener listener, long lastTimestamp) {
-        TAPDatabaseManager.getInstance(instanceKey).getMessagesDesc(roomID, listener, lastTimestamp);
+        TAPDatabaseManager.getInstance().getMessagesDesc(roomID, listener, lastTimestamp);
     }
 
     public void getMessagesFromDatabaseAsc(String roomID, TAPDatabaseListener<TAPMessageEntity> listener) {
-        TAPDatabaseManager.getInstance(instanceKey).getMessagesAsc(roomID, listener);
+        TAPDatabaseManager.getInstance().getMessagesAsc(roomID, listener);
     }
 
     public void searchAllMessagesFromDatabase(String keyword, TAPDatabaseListener<TAPMessageEntity> listener) {
-        TAPDatabaseManager.getInstance(instanceKey).searchAllMessages(keyword, listener);
+        TAPDatabaseManager.getInstance().searchAllMessages(keyword, listener);
     }
 
     public void getRoomList(List<TAPMessageEntity> saveMessages, boolean isCheckUnreadFirst, TAPDatabaseListener<TAPMessageEntity> listener) {
         if (null == getActiveUser()) {
             return;
         }
-        TAPDatabaseManager.getInstance(instanceKey).getRoomList(getActiveUser().getUserID(), getActiveUser().getUsername(), saveMessages, isCheckUnreadFirst, listener);
+        TAPDatabaseManager.getInstance().getRoomList(getActiveUser().getUserID(), saveMessages, isCheckUnreadFirst, listener);
     }
 
     public void getAllUnreadMessagesFromRoom(String roomID, TAPDatabaseListener<TAPMessageEntity> listener) {
         if (null == getActiveUser())
             return;
-        TAPDatabaseManager.getInstance(instanceKey).getAllUnreadMessagesFromRoom(getActiveUser().getUserID(), roomID, listener);
-    }
 
-    public void getAllUnreadMentionsFromRoom(String roomID, TAPDatabaseListener<TAPMessageEntity> listener) {
-        if (null == getActiveUser())
-            return;
-        TAPDatabaseManager.getInstance(instanceKey).getAllUnreadMentionsFromRoom(getActiveUser().getUserID(), getActiveUser().getUsername(), roomID, listener);
+        TAPDatabaseManager.getInstance().getAllUnreadMessagesFromRoom(getActiveUser().getUserID(), roomID, listener);
     }
 
     public void getRoomList(boolean isCheckUnreadFirst, TAPDatabaseListener<TAPMessageEntity> listener) {
         if (null == getActiveUser()) {
             return;
         }
-        TAPDatabaseManager.getInstance(instanceKey).getRoomList(getActiveUser().getUserID(), getActiveUser().getUsername(), isCheckUnreadFirst, listener);
+        TAPDatabaseManager.getInstance().getRoomList(getActiveUser().getUserID(), isCheckUnreadFirst, listener);
     }
 
     public void searchAllRoomsFromDatabase(String keyword, TAPDatabaseListener<TAPMessageEntity> listener) {
         if (null == getActiveUser()) {
             return;
         }
-        TAPDatabaseManager.getInstance(instanceKey).searchAllRooms(getActiveUser().getUserID(), getActiveUser().getUsername(), keyword, listener);
+        TAPDatabaseManager.getInstance().searchAllRooms(getActiveUser().getUserID(), keyword, listener);
     }
 
     public void getRoomModel(TAPUserModel userModel, TAPDatabaseListener<TAPRoomModel> listener) {
         if (null == getActiveUser()) {
             return;
         }
-        TAPDatabaseManager.getInstance(instanceKey).getRoom(getActiveUser().getUserID(), userModel, listener);
+        TAPDatabaseManager.getInstance().getRoom(getActiveUser().getUserID(), userModel, listener);
     }
 
     public void getRoomMedias(Long lastTimestamp, String roomID, TAPDatabaseListener<TAPMessageEntity> listener) {
-        TAPDatabaseManager.getInstance(instanceKey).getRoomMedias(lastTimestamp, roomID, listener);
+        TAPDatabaseManager.getInstance().getRoomMedias(lastTimestamp, roomID, listener);
     }
 
     public void getRoomMediaMessageBeforeTimestamp(String roomID, long minimumTimestamp, TAPDatabaseListener<TAPMessageEntity> listener) {
-        TAPDatabaseManager.getInstance(instanceKey).getRoomMediaMessageBeforeTimestamp(roomID, minimumTimestamp, listener);
+        TAPDatabaseManager.getInstance().getRoomMediaMessageBeforeTimestamp(roomID, minimumTimestamp, listener);
     }
 
     public void getRoomMediaMessage(String roomID, TAPDatabaseListener<TAPMessageEntity> listener) {
-        TAPDatabaseManager.getInstance(instanceKey).getRoomMediaMessage(roomID, listener);
+        TAPDatabaseManager.getInstance().getRoomMediaMessage(roomID, listener);
     }
 
     public void getUnreadCountPerRoom(String roomID, final TAPDatabaseListener<TAPMessageEntity> listener) {
         if (null == getActiveUser()) {
             return;
         }
-        TAPDatabaseManager.getInstance(instanceKey).getUnreadCountPerRoom(getActiveUser().getUserID(), getActiveUser().getUsername(), roomID, listener);
+        TAPDatabaseManager.getInstance().getUnreadCountPerRoom(getActiveUser().getUserID(), roomID, listener);
     }
 
     public void getUnreadCount(final TAPDatabaseListener<TAPMessageEntity> listener) {
         if (null == getActiveUser()) {
             return;
         }
-        TAPDatabaseManager.getInstance(instanceKey).getUnreadCount(getActiveUser().getUserID(), listener);
+        TAPDatabaseManager.getInstance().getUnreadCount(getActiveUser().getUserID(), listener);
     }
 
     public void getMinCreatedOfUnreadMessage(String roomID, final TAPDatabaseListener<Long> listener) {
         if (null == getActiveUser()) {
             return;
         }
-        TAPDatabaseManager.getInstance(instanceKey).getMinCreatedOfUnreadMessage(getActiveUser().getUserID(), roomID, listener);
+        TAPDatabaseManager.getInstance().getMinCreatedOfUnreadMessage(getActiveUser().getUserID(), roomID, listener);
     }
 
     public void deleteAllMessage() {
-        TAPDatabaseManager.getInstance(instanceKey).deleteAllMessage();
+        TAPDatabaseManager.getInstance().deleteAllMessage();
     }
 
     public void deleteMessageByRoomId(String roomId, TAPDatabaseListener listener) {
-        TAPDatabaseManager.getInstance(instanceKey).deleteMessageByRoomId(roomId, listener);
+        TAPDatabaseManager.getInstance().deleteMessageByRoomId(roomId, listener);
     }
 
     // Recent Search
     public void insertToDatabase(TAPRecentSearchEntity recentSearchEntity) {
-        TAPDatabaseManager.getInstance(instanceKey).insert(recentSearchEntity);
+        TAPDatabaseManager.getInstance().insert(recentSearchEntity);
     }
 
     public void deleteFromDatabase(TAPRecentSearchEntity recentSearchEntity) {
-        TAPDatabaseManager.getInstance(instanceKey).delete(recentSearchEntity);
+        TAPDatabaseManager.getInstance().delete(recentSearchEntity);
     }
 
     public void deleteFromDatabase(List<TAPRecentSearchEntity> recentSearchEntities) {
-        TAPDatabaseManager.getInstance(instanceKey).delete(recentSearchEntities);
+        TAPDatabaseManager.getInstance().delete(recentSearchEntities);
     }
 
     public void deleteAllRecentSearch() {
-        TAPDatabaseManager.getInstance(instanceKey).deleteAllRecentSearch();
+        TAPDatabaseManager.getInstance().deleteAllRecentSearch();
     }
 
     public LiveData<List<TAPRecentSearchEntity>> getRecentSearchLive() {
-        return TAPDatabaseManager.getInstance(instanceKey).getRecentSearchLive();
+        return TAPDatabaseManager.getInstance().getRecentSearchLive();
     }
 
     // My Contact
     public void getMyContactList(TAPDatabaseListener<TAPUserModel> listener) {
-        TAPDatabaseManager.getInstance(instanceKey).getMyContactList(listener);
+        TAPDatabaseManager.getInstance().getMyContactList(listener);
     }
 
     public void getNonContactUsersFromDatabase(TAPDatabaseListener<TAPUserModel> listener) {
-        TAPDatabaseManager.getInstance(instanceKey).getNonContactUsers(listener);
+        TAPDatabaseManager.getInstance().getNonContactUsers(listener);
     }
 
     public LiveData<List<TAPUserModel>> getMyContactList() {
-        return TAPDatabaseManager.getInstance(instanceKey).getMyContactList();
+        return TAPDatabaseManager.getInstance().getMyContactList();
     }
 
     public void searchContactsByName(String keyword, TAPDatabaseListener<TAPUserModel> listener) {
-        TAPDatabaseManager.getInstance(instanceKey).searchContactsByName(keyword, listener);
+        TAPDatabaseManager.getInstance().searchContactsByName(keyword, listener);
     }
 
     public void searchContactsByNameAndUsername(String keyword, TAPDatabaseListener<TAPUserModel> listener) {
-        TAPDatabaseManager.getInstance(instanceKey).searchContactsByNameAndUsername(keyword, listener);
+        TAPDatabaseManager.getInstance().searchContactsByNameAndUsername(keyword, listener);
     }
 
     public void searchNonContactUsersFromDatabase(String keyword, TAPDatabaseListener<TAPUserModel> listener) {
-        TAPDatabaseManager.getInstance(instanceKey).searchNonContactUsers(keyword, listener);
+        TAPDatabaseManager.getInstance().searchNonContactUsers(keyword, listener);
     }
 
     public void insertMyContactToDatabase(TAPUserModel... userModels) {
-        TAPDatabaseManager.getInstance(instanceKey).insertMyContact(userModels);
+        TAPDatabaseManager.getInstance().insertMyContact(userModels);
     }
 
     public void insertMyContactToDatabase(TAPDatabaseListener<TAPUserModel> listener, TAPUserModel... userModels) {
-        TAPDatabaseManager.getInstance(instanceKey).insertMyContact(listener, userModels);
+        TAPDatabaseManager.getInstance().insertMyContact(listener, userModels);
     }
 
     public void insertMyContactToDatabase(List<TAPUserModel> userModels) {
-        TAPDatabaseManager.getInstance(instanceKey).insertMyContact(userModels);
+        TAPDatabaseManager.getInstance().insertMyContact(userModels);
     }
 
     // Set isContact value to 0 or 1 then insert user model to database
     public void checkContactAndInsertToDatabase(TAPUserModel userModel) {
-        TAPDatabaseManager.getInstance(instanceKey).checkContactAndInsert(userModel);
+        TAPDatabaseManager.getInstance().checkContactAndInsert(userModel);
     }
 
     public void getUserWithXcUserID(String xcUserID, TAPDatabaseListener<TAPUserModel> listener) {
-        TAPDatabaseManager.getInstance(instanceKey).getUserWithXcUserID(xcUserID, listener);
+        TAPDatabaseManager.getInstance().getUserWithXcUserID(xcUserID, listener);
     }
 
     public void insertAndGetMyContact(List<TAPUserModel> userModels, TAPDatabaseListener<TAPUserModel> listener) {
-        TAPDatabaseManager.getInstance(instanceKey).insertAndGetMyContact(userModels, listener);
+        TAPDatabaseManager.getInstance().insertAndGetMyContact(userModels, listener);
     }
 
     public void deleteMyContactFromDatabase(TAPUserModel... userModels) {
-        TAPDatabaseManager.getInstance(instanceKey).deleteMyContact(userModels);
+        TAPDatabaseManager.getInstance().deleteMyContact(userModels);
     }
 
     public void deleteMyContactFromDatabase(List<TAPUserModel> userModels) {
-        TAPDatabaseManager.getInstance(instanceKey).deleteMyContact(userModels);
+        TAPDatabaseManager.getInstance().deleteMyContact(userModels);
     }
 
     public void deleteAllContact() {
-        TAPDatabaseManager.getInstance(instanceKey).deleteAllContact();
+        TAPDatabaseManager.getInstance().deleteAllContact();
     }
 
     public void updateMyContact(TAPUserModel userModels) {
-        TAPDatabaseManager.getInstance(instanceKey).updateMyContact(userModels);
+        TAPDatabaseManager.getInstance().updateMyContact(userModels);
     }
 
     public void checkUserInMyContacts(String userID, TAPDatabaseListener<TAPUserModel> listener) {
-        TAPDatabaseManager.getInstance(instanceKey).checkUserInMyContacts(userID, listener);
+        TAPDatabaseManager.getInstance().checkUserInMyContacts(userID, listener);
     }
 
     public void getAllUserData(TAPDatabaseListener<TAPUserModel> listener) {
-        TAPDatabaseManager.getInstance(instanceKey).getAllUserData(listener);
+        TAPDatabaseManager.getInstance().getAllUserData(listener);
     }
 
     //General
@@ -1026,77 +1001,71 @@ public class TAPDataManager {
 
     public void getAuthTicket(String ipAddress, String userAgent, String userPlatform, String userDeviceID, String xcUserID
             , String fullname, String email, String phone, String username, TAPDefaultDataView<TAPAuthTicketResponse> view) {
-        TAPApiManager.getInstance(instanceKey).getAuthTicket(ipAddress, userAgent, userPlatform, userDeviceID, xcUserID,
+        TAPApiManager.getInstance().getAuthTicket(ipAddress, userAgent, userPlatform, userDeviceID, xcUserID,
                 fullname, email, phone, username, new TAPDefaultSubscriber<>(view));
     }
 
     public void sendCustomMessage(Integer messageType, String body, String filterID, String senderUserID, String recipientUserID, TAPDefaultDataView<TAPSendCustomMessageResponse> view) {
-        TAPApiManager.getInstance(instanceKey).sendCustomMessage(messageType, body, filterID, senderUserID, recipientUserID, new TAPDefaultSubscriber<>(view));
+        TAPApiManager.getInstance().sendCustomMessage(messageType, body, filterID, senderUserID, recipientUserID, new TAPDefaultSubscriber<>(view));
     }
 
     public void getAccessTokenFromApi(TAPDefaultDataView<TAPGetAccessTokenResponse> view) {
-        TAPApiManager.getInstance(instanceKey).getAccessToken(new TAPDefaultSubscriber<>(view));
+        TAPApiManager.getInstance().getAccessToken(new TAPDefaultSubscriber<>(view));
     }
 
     public void requestOTPLogin(int countryID, String phone, TAPDefaultDataView<TAPLoginOTPResponse> view) {
-        TAPApiManager.getInstance(instanceKey).requestOTPLogin("phone", countryID, phone, new TAPDefaultSubscriber<>(view));
+        TAPApiManager.getInstance().requestOTPLogin("phone", countryID, phone, new TAPDefaultSubscriber<>(view));
     }
 
     public void verifyOTPLogin(long otpID, String otpKey, String otpCode, TAPDefaultDataView<TAPLoginOTPVerifyResponse> view) {
-        TAPApiManager.getInstance(instanceKey).verifyingOTPLogin(otpID, otpKey, otpCode, new TAPDefaultSubscriber<>(view));
+        TAPApiManager.getInstance().verifyingOTPLogin(otpID, otpKey, otpCode, new TAPDefaultSubscriber<>(view));
     }
 
     public void refreshAccessToken(TAPDefaultDataView<TAPGetAccessTokenResponse> view) {
-        TAPApiManager.getInstance(instanceKey).refreshAccessToken(new TAPDefaultSubscriber<>(view));
+        TAPApiManager.getInstance().refreshAccessToken(new TAPDefaultSubscriber<>(view));
     }
 
     public void validateAccessToken(TAPDefaultDataView<TAPErrorModel> view) {
-        if (checkAccessTokenAvailable()) {
-            if (null != validateSub) {
-                validateSub.unsubscribe();
-            }
-            TAPApiManager.getInstance(instanceKey).validateAccessToken(
-                    validateSub = new TAPDefaultSubscriber<>(view));
-        }
+        if (TAPDataManager.getInstance().checkAccessTokenAvailable())
+            TAPApiManager.getInstance().validateAccessToken(new TAPDefaultSubscriber<>(view));
     }
 
     public void registerFcmTokenToServer(String fcmToken, TAPDefaultDataView<TAPCommonResponse> view) {
-        TAPApiManager.getInstance(instanceKey).registerFcmTokenToServer(fcmToken, new TAPDefaultSubscriber<>(view));
+        TAPApiManager.getInstance().registerFcmTokenToServer(fcmToken, new TAPDefaultSubscriber<>(view));
     }
 
     public void getMessageRoomListAndUnread(String userID, TAPDefaultDataView<TAPGetRoomListResponse> view) {
-        TAPApiManager.getInstance(instanceKey).getRoomList(userID, new TAPDefaultSubscriber<>(view));
+        TAPApiManager.getInstance().getRoomList(userID, new TAPDefaultSubscriber<>(view));
     }
 
     public void getNewAndUpdatedMessage(TAPDefaultDataView<TAPGetRoomListResponse> view) {
-        TAPApiManager.getInstance(instanceKey).getPendingAndUpdatedMessage(new TAPDefaultSubscriber<>(view));
+        TAPApiManager.getInstance().getPendingAndUpdatedMessage(new TAPDefaultSubscriber<>(view));
     }
 
     public void getMessageListByRoomAfter(String roomID, Long minCreated, Long lastUpdated, TAPDefaultDataView<TAPGetMessageListByRoomResponse> view) {
-        TAPApiManager.getInstance(instanceKey).getMessageListByRoomAfter(roomID, minCreated, lastUpdated, new TAPDefaultSubscriber<>(view));
+        TAPApiManager.getInstance().getMessageListByRoomAfter(roomID, minCreated, lastUpdated, new TAPDefaultSubscriber<>(view));
     }
 
     public void getMessageListByRoomBefore(String roomID, Long maxCreated, Integer limit, TAPDefaultDataView<TAPGetMessageListByRoomResponse> view) {
-        TAPApiManager.getInstance(instanceKey).getMessageListByRoomBefore(roomID, maxCreated, limit, new TAPDefaultSubscriber<>(view));
+        TAPApiManager.getInstance().getMessageListByRoomBefore(roomID, maxCreated, limit, new TAPDefaultSubscriber<>(view));
     }
 
     public void updateMessageStatusAsDelivered(List<String> messageIDs, TAPDefaultDataView<TAPUpdateMessageStatusResponse> view) {
-        if (!messageIDs.isEmpty())
-            TAPApiManager.getInstance(instanceKey).updateMessageStatusAsDelivered(messageIDs, new TAPDefaultSubscriber<>(view));
+        TAPApiManager.getInstance().updateMessageStatusAsDelivered(messageIDs, new TAPDefaultSubscriber<>(view));
     }
 
     public void updateMessageStatusAsRead(List<String> messageIDs, TAPDefaultDataView<TAPUpdateMessageStatusResponse> view) {
-        TAPApiManager.getInstance(instanceKey).updateMessageStatusAsRead(messageIDs, new TAPDefaultSubscriber<>(view));
+        TAPApiManager.getInstance().updateMessageStatusAsRead(messageIDs, new TAPDefaultSubscriber<>(view));
     }
 
     public void deleteMessagesAPI(String roomID, List<String> messageIDs, boolean isForEveryone, TAPDefaultDataView<TAPDeleteMessageResponse> view) {
-        TAPApiManager.getInstance(instanceKey).deleteMessagesAPI(roomID, messageIDs, isForEveryone, new TAPDefaultSubscriber<>(view));
+        TAPApiManager.getInstance().deleteMessagesAPI(roomID, messageIDs, isForEveryone, new TAPDefaultSubscriber<>(view));
     }
 
     public void deleteMessagesAPI(String roomID, String messageID, boolean isForEveryone, TAPDefaultDataView<TAPDeleteMessageResponse> view) {
         List<String> messageIDs = new ArrayList<>();
         messageIDs.add(messageID);
-        TAPApiManager.getInstance(instanceKey).deleteMessagesAPI(roomID, messageIDs, isForEveryone, new TAPDefaultSubscriber<>(view));
+        TAPApiManager.getInstance().deleteMessagesAPI(roomID, messageIDs, isForEveryone, new TAPDefaultSubscriber<>(view));
     }
 
     public void deleteMessagesAPI(String roomID, String messageID, boolean isForEveryone) {
@@ -1105,92 +1074,92 @@ public class TAPDataManager {
     }
 
     public void getMyContactListFromAPI(TAPDefaultDataView<TAPContactResponse> view) {
-        TAPApiManager.getInstance(instanceKey).getMyContactListFromAPI(new TAPDefaultSubscriber<>(view));
+        TAPApiManager.getInstance().getMyContactListFromAPI(new TAPDefaultSubscriber<>(view));
     }
 
     public void addContactApi(String userID, TAPDefaultDataView<TAPAddContactResponse> view) {
-        TAPApiManager.getInstance(instanceKey).addContact(userID, new TAPDefaultSubscriber<>(view));
+        TAPApiManager.getInstance().addContact(userID, new TAPDefaultSubscriber<>(view));
     }
 
     public void addContactByPhone(List<String> phones, TAPDefaultDataView<TAPAddContactByPhoneResponse> view) {
-        TAPApiManager.getInstance(instanceKey).addContactByPhone(phones, new TAPDefaultSubscriber<>(view));
+        TAPApiManager.getInstance().addContactByPhone(phones, new TAPDefaultSubscriber<>(view));
     }
 
     public void removeContactApi(String userID, TAPDefaultDataView<TAPCommonResponse> view) {
-        TAPApiManager.getInstance(instanceKey).removeContact(userID, new TAPDefaultSubscriber<>(view));
+        TAPApiManager.getInstance().removeContact(userID, new TAPDefaultSubscriber<>(view));
     }
 
     public void getCountryList(TAPDefaultDataView<TAPCountryListResponse> view) {
-        TAPApiManager.getInstance(instanceKey).getCountryList(new TAPDefaultSubscriber<>(view));
+        TAPApiManager.getInstance().getCountryList(new TAPDefaultSubscriber<>(view));
     }
 
     public void register(String fullName, String username, Integer countryID, String phone, String email, String password, TAPDefaultDataView<TAPRegisterResponse> view) {
-        TAPApiManager.getInstance(instanceKey).register(fullName, username, countryID, phone, email, password, new TAPDefaultSubscriber<>(view));
+        TAPApiManager.getInstance().register(fullName, username, countryID, phone, email, password, new TAPDefaultSubscriber<>(view));
     }
 
     public void logout(TAPDefaultDataView<TAPCommonResponse> view) {
-        TAPApiManager.getInstance(instanceKey).logout(new TAPDefaultSubscriber<>(view));
+        TAPApiManager.getInstance().logout(new TAPDefaultSubscriber<>(view));
     }
 
     //Group and Chat Room
     public void createGroupChatRoom(String roomName, List<String> participantIDs, TAPDefaultDataView<TAPCreateRoomResponse> view) {
-        TAPApiManager.getInstance(instanceKey).createChatRoom(roomName, TYPE_GROUP, participantIDs, new TAPDefaultSubscriber<>(view));
+        TAPApiManager.getInstance().createChatRoom(roomName, TYPE_GROUP, participantIDs, new TAPDefaultSubscriber<>(view));
     }
 
     public void getChatRoomData(String roomID, TAPDefaultDataView<TAPCreateRoomResponse> view) {
-        TAPApiManager.getInstance(instanceKey).getChatRoomData(roomID, new TAPDefaultSubscriber<>(view));
+        TAPApiManager.getInstance().getChatRoomData(roomID, new TAPDefaultSubscriber<>(view));
     }
 
     public void getChatRoomByXcRoomID(String xcRoomID, TAPDefaultDataView<TAPCreateRoomResponse> view) {
-        TAPApiManager.getInstance(instanceKey).getChatRoomByXcRoomID(xcRoomID, new TAPDefaultSubscriber<>(view));
+        TAPApiManager.getInstance().getChatRoomByXcRoomID(xcRoomID, new TAPDefaultSubscriber<>(view));
     }
 
     public void updateChatRoom(String roomID, String roomName, TAPDefaultDataView<TAPUpdateRoomResponse> view) {
-        TAPApiManager.getInstance(instanceKey).updateChatRoom(roomID, roomName, new TAPDefaultSubscriber<>(view));
+        TAPApiManager.getInstance().updateChatRoom(roomID, roomName, new TAPDefaultSubscriber<>(view));
     }
 
     public void addRoomParticipant(String roomID, List<String> userIDs, TAPDefaultDataView<TAPCreateRoomResponse> view) {
-        TAPApiManager.getInstance(instanceKey).addRoomParticipant(roomID, userIDs, new TAPDefaultSubscriber<>(view));
+        TAPApiManager.getInstance().addRoomParticipant(roomID, userIDs, new TAPDefaultSubscriber<>(view));
     }
 
     public void removeRoomParticipant(String roomID, List<String> userIDs, TAPDefaultDataView<TAPCreateRoomResponse> view) {
-        TAPApiManager.getInstance(instanceKey).removeRoomParticipant(roomID, userIDs, new TAPDefaultSubscriber<>(view));
+        TAPApiManager.getInstance().removeRoomParticipant(roomID, userIDs, new TAPDefaultSubscriber<>(view));
     }
 
     public void leaveChatRoom(String roomID, TAPDefaultDataView<TAPCommonResponse> view) {
-        TAPApiManager.getInstance(instanceKey).leaveChatRoom(roomID, new TAPDefaultSubscriber<>(view));
+        TAPApiManager.getInstance().leaveChatRoom(roomID, new TAPDefaultSubscriber<>(view));
     }
 
     public void promoteGroupAdmins(String roomID, List<String> userIDs, TAPDefaultDataView<TAPCreateRoomResponse> view) {
-        TAPApiManager.getInstance(instanceKey).promoteGroupAdmins(roomID, userIDs, new TAPDefaultSubscriber<>(view));
+        TAPApiManager.getInstance().promoteGroupAdmins(roomID, userIDs, new TAPDefaultSubscriber<>(view));
     }
 
     public void demoteGroupAdmins(String roomID, List<String> userIDs, TAPDefaultDataView<TAPCreateRoomResponse> view) {
-        TAPApiManager.getInstance(instanceKey).demoteGroupAdmins(roomID, userIDs, new TAPDefaultSubscriber<>(view));
+        TAPApiManager.getInstance().demoteGroupAdmins(roomID, userIDs, new TAPDefaultSubscriber<>(view));
     }
 
     public void deleteChatRoom(TAPRoomModel room, TAPDefaultDataView<TAPCommonResponse> view) {
-        TAPApiManager.getInstance(instanceKey).deleteChatRoom(room, getActiveUser().getUserID(),
-                getAccessTokenExpiry(), new TAPDefaultSubscriber<>(view));
+        TAPApiManager.getInstance().deleteChatRoom(room, getActiveUser().getUserID(),
+                TAPDataManager.getInstance().getAccessTokenExpiry(), new TAPDefaultSubscriber<>(view));
     }
 
     // Search User
     private TAPDefaultSubscriber<TAPBaseResponse<TAPGetUserResponse>, TAPDefaultDataView<TAPGetUserResponse>, TAPGetUserResponse> searchUserSubscriber;
 
     public void getUserByIdFromApi(String id, TAPDefaultDataView<TAPGetUserResponse> view) {
-        TAPApiManager.getInstance(instanceKey).getUserByID(id, searchUserSubscriber = new TAPDefaultSubscriber<>(view));
+        TAPApiManager.getInstance().getUserByID(id, searchUserSubscriber = new TAPDefaultSubscriber<>(view));
     }
 
     public void getUserByXcUserIdFromApi(String xcUserID, TAPDefaultDataView<TAPGetUserResponse> view) {
-        TAPApiManager.getInstance(instanceKey).getUserByXcUserID(xcUserID, searchUserSubscriber = new TAPDefaultSubscriber<>(view));
+        TAPApiManager.getInstance().getUserByXcUserID(xcUserID, searchUserSubscriber = new TAPDefaultSubscriber<>(view));
     }
 
     public void getUserByUsernameFromApi(String username, boolean ignoreCase, TAPDefaultDataView<TAPGetUserResponse> view) {
-        TAPApiManager.getInstance(instanceKey).getUserByUsername(username, ignoreCase, searchUserSubscriber = new TAPDefaultSubscriber<>(view));
+        TAPApiManager.getInstance().getUserByUsername(username, ignoreCase, searchUserSubscriber = new TAPDefaultSubscriber<>(view));
     }
 
     public void getMultipleUsersByIdFromApi(List<String> ids, TAPDefaultDataView<TAPGetMultipleUserResponse> view) {
-        TAPApiManager.getInstance(instanceKey).getMultipleUserByID(ids, new TAPDefaultSubscriber<>(view));
+        TAPApiManager.getInstance().getMultipleUserByID(ids, new TAPDefaultSubscriber<>(view));
     }
 
     public void cancelUserSearchApiCall() {
@@ -1203,7 +1172,7 @@ public class TAPDataManager {
     private TAPDefaultSubscriber<TAPBaseResponse<TAPCheckUsernameResponse>, TAPDefaultDataView<TAPCheckUsernameResponse>, TAPCheckUsernameResponse> checkUsernameSubscriber;
 
     public void checkUsernameExists(String username, TAPDefaultDataView<TAPCheckUsernameResponse> view) {
-        TAPApiManager.getInstance(instanceKey).checkUsernameExists(username, checkUsernameSubscriber = new TAPDefaultSubscriber<>(view));
+        TAPApiManager.getInstance().checkUsernameExists(username, checkUsernameSubscriber = new TAPDefaultSubscriber<>(view));
     }
 
     public void cancelCheckUsernameApiCall() {
@@ -1218,19 +1187,19 @@ public class TAPDataManager {
     public void uploadImage(String localID, File imageFile, String roomID, String caption, String mimeType,
                             ProgressRequestBody.UploadCallbacks uploadCallback,
                             TAPDefaultDataView<TAPUploadFileResponse> view) {
-        TAPApiManager.getInstance(instanceKey).uploadImage(imageFile, roomID, caption, mimeType, uploadCallback, getUploadSubscriber(roomID, localID, view));
+        TAPApiManager.getInstance().uploadImage(imageFile, roomID, caption, mimeType, uploadCallback, getUploadSubscriber(roomID, localID, view));
     }
 
     public void uploadVideo(String localID, File videoFile, String roomID, String caption, String mimeType,
                             ProgressRequestBody.UploadCallbacks uploadCallback,
                             TAPDefaultDataView<TAPUploadFileResponse> view) {
-        TAPApiManager.getInstance(instanceKey).uploadVideo(videoFile, roomID, caption, mimeType, uploadCallback, getUploadSubscriber(roomID, localID, view));
+        TAPApiManager.getInstance().uploadVideo(videoFile, roomID, caption, mimeType, uploadCallback, getUploadSubscriber(roomID, localID, view));
     }
 
     public void uploadFile(String localID, File file, String roomID, String mimeType,
                            ProgressRequestBody.UploadCallbacks uploadCallback,
                            TAPDefaultDataView<TAPUploadFileResponse> view) {
-        TAPApiManager.getInstance(instanceKey).uploadFile(file, roomID, mimeType, uploadCallback, getUploadSubscriber(roomID, localID, view));
+        TAPApiManager.getInstance().uploadFile(file, roomID, mimeType, uploadCallback, getUploadSubscriber(roomID, localID, view));
     }
 
     private HashMap<String, TAPDefaultSubscriber<TAPBaseResponse<TAPUploadFileResponse>, TAPDefaultDataView<TAPUploadFileResponse>, TAPUploadFileResponse>>
@@ -1262,7 +1231,7 @@ public class TAPDataManager {
                                      TAPDefaultDataView<TAPGetUserResponse> view) {
         cancelUploadProfilePicture();
         uploadProfilePictureSubscriber = new TAPDefaultSubscriber<>(view);
-        TAPApiManager.getInstance(instanceKey).uploadProfilePicture(imageFile, mimeType, uploadCallback, uploadProfilePictureSubscriber);
+        TAPApiManager.getInstance().uploadProfilePicture(imageFile, mimeType, uploadCallback, uploadProfilePictureSubscriber);
     }
 
     private void cancelUploadProfilePicture() {
@@ -1275,14 +1244,14 @@ public class TAPDataManager {
 
     //Upload Room Picture
     public void uploadRoomPicture(File imageFile, String mimeType, String roomID, TAPDefaultDataView<TAPUpdateRoomResponse> view) {
-        TAPApiManager.getInstance(instanceKey).uploadGroupPicture(imageFile, mimeType, roomID, new TAPDefaultSubscriber<>(view));
+        TAPApiManager.getInstance().uploadGroupPicture(imageFile, mimeType, roomID, new TAPDefaultSubscriber<>(view));
     }
 
     // File Download
     private HashMap<String, TAPBaseSubscriber<TAPDefaultDataView<ResponseBody>>> downloadSubscribers; // Key is message local ID
 
     public void downloadFile(String roomID, String localID, String fileID, @Nullable Number fileSize, TAPDefaultDataView<ResponseBody> view) {
-        TAPApiManager.getInstance(instanceKey).downloadFile(roomID, localID, fileID, fileSize, getNewDownloadSubscriber(localID, view));
+        TAPApiManager.getInstance().downloadFile(roomID, localID, fileID, fileSize, getNewDownloadSubscriber(localID, view));
     }
 
     public void cancelFileDownload(String localID) {
@@ -1307,6 +1276,6 @@ public class TAPDataManager {
     }
 
     public void getProjectConfig(TAPDefaultDataView<TapConfigs> view) {
-        TAPApiManager.getInstance(instanceKey).getProjectConfig(new TAPDefaultSubscriber<>(view));
+        TAPApiManager.getInstance().getProjectConfig(new TAPDefaultSubscriber<>(view));
     }
 }

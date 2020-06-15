@@ -5,6 +5,10 @@ import android.os.Parcelable;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.List;
+
+import io.taptalk.TapTalk.Model.TAPCountryListItem;
+
 public class TAPRegisterResponse implements Parcelable {
     @JsonProperty("userID") private String userID;
     @JsonProperty("ticket") private String ticket;

@@ -11,27 +11,25 @@ import io.taptalk.TapTalk.Const.TAPDefaultConstant;
 
 public class TAPAutoStartPermission {
 
-    private final String TAG = TAPAutoStartPermission.class.getSimpleName();
-
     private static TAPAutoStartPermission instance;
 
     public static TAPAutoStartPermission getInstance() {
         return null == instance ? instance = new TAPAutoStartPermission() : instance;
     }
 
-    public void showPermissionRequest(String instanceKey, Context context) {
+    public void showPermissionRequest(Context context) {
         for (Intent intent : TAPDefaultConstant.AUTO_START_INTENTS)
             if (context.getPackageManager().resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY) != null) {
                 new TapTalkDialog.Builder(context)
                         .setTitle("Enable AutoStart")
-                        .setMessage("Please allow auto start in settings to receive chat notifications from " + TapTalk.getClientAppName(instanceKey) + ".")
+                        .setMessage("Please allow auto start in settings to receive chat notifications from " + TapTalk.getClientAppName() + ".")
                         .setPrimaryButtonTitle("Allow")
                         .setPrimaryButtonListener(v -> {
                             try {
                                 //context.startActivity(intent);
                                 requestAutoStartPermission(context, intent);
                             } catch (Exception e) {
-                                Log.e(TAG, "showPermissionRequest: ", e);
+                                Log.e("><><><", "showPermissionRequest: ", e);
                                 e.printStackTrace();
                             }
                         })

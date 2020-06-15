@@ -1,6 +1,6 @@
 package io.taptalk.TapTalk.ViewModel;
 
-import androidx.lifecycle.ViewModel;
+import android.arch.lifecycle.ViewModel;
 
 import io.taptalk.TapTalk.Model.TAPUserModel;
 

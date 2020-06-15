@@ -1,6 +1,6 @@
 package io.taptalk.TapTalk.Helper.CustomTabLayout;
 
-import androidx.browser.customtabs.CustomTabsClient;
+import android.support.customtabs.CustomTabsClient;
 
 public interface TAPServiceConnectionCallback {
     /**

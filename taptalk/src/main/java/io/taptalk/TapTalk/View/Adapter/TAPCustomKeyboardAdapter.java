@@ -1,11 +1,10 @@
 package io.taptalk.TapTalk.View.Adapter;
 
+import android.support.annotation.NonNull;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-
-import androidx.annotation.NonNull;
 
 import com.bumptech.glide.Glide;
 
@@ -14,7 +13,7 @@ import java.util.List;
 import io.taptalk.TapTalk.Helper.TAPBaseViewHolder;
 import io.taptalk.TapTalk.Interface.TapTalkCustomKeyboardInterface;
 import io.taptalk.TapTalk.Model.TAPCustomKeyboardItemModel;
-import io.taptalk.TapTalk.R;
+import io.taptalk.Taptalk.R;
 
 public class TAPCustomKeyboardAdapter extends TAPBaseAdapter<TAPCustomKeyboardItemModel, TAPBaseViewHolder<TAPCustomKeyboardItemModel>> {
 

@@ -16,8 +16,7 @@ public class TAPAddRoomParticipantRequest implements Parcelable {
         this.userIDs = userIDs;
     }
 
-    public TAPAddRoomParticipantRequest() {
-    }
+    public TAPAddRoomParticipantRequest() {}
 
     public String getRoomID() {
         return roomID;

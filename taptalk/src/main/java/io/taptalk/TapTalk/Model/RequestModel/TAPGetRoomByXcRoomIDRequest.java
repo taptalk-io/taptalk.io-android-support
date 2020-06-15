@@ -1,6 +1,6 @@
 package io.taptalk.TapTalk.Model.RequestModel;
 
-import androidx.annotation.Nullable;
+import android.support.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

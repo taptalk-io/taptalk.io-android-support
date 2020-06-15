@@ -7,8 +7,7 @@ public class TAPContactModel {
     @JsonProperty("isRequestPending") private boolean isRequestPending;
     @JsonProperty("isRequestAccepted") private boolean isRequestAccepted;
 
-    public TAPContactModel() {
-    }
+    public TAPContactModel() {}
 
     public TAPUserModel getUser() {
         return user;

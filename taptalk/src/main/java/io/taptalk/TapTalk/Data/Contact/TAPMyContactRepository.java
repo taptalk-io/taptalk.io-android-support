@@ -1,8 +1,7 @@
 package io.taptalk.TapTalk.Data.Contact;
 
 import android.app.Application;
-
-import androidx.lifecycle.LiveData;
+import android.arch.lifecycle.LiveData;
 
 import java.util.List;
 
@@ -14,8 +13,8 @@ public class TAPMyContactRepository {
     private TAPMyContactDao myContactDao;
     private LiveData<List<TAPUserModel>> myContactListLive;
 
-    public TAPMyContactRepository(String instanceKey, Application application) {
-        TapTalkDatabase db = TapTalkDatabase.getDatabase(instanceKey, application);
+    public TAPMyContactRepository(Application application) {
+        TapTalkDatabase db = TapTalkDatabase.getDatabase(application);
         myContactDao = db.myContactDao();
         myContactListLive = myContactDao.getAllMyContactLive();
     }
@@ -50,7 +49,7 @@ public class TAPMyContactRepository {
     }
 
     public void insertAndGetContact(List<TAPUserModel> userModels, TAPDatabaseListener<TAPUserModel> listener) {
-        new Thread(() -> {
+        new Thread(() ->{
             myContactDao.insert(userModels);
             List<TAPUserModel> myContactList = myContactDao.getAllMyContact();
             listener.onSelectFinished(myContactList);

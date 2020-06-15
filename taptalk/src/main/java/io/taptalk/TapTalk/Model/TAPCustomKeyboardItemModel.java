@@ -1,8 +1,7 @@
 package io.taptalk.TapTalk.Model;
 
 import android.graphics.drawable.Drawable;
-
-import androidx.annotation.Nullable;
+import android.support.annotation.Nullable;
 
 public class TAPCustomKeyboardItemModel {
 

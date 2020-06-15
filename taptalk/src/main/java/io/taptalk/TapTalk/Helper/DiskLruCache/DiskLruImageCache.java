@@ -14,7 +14,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import io.taptalk.TapTalk.BuildConfig;
+import io.taptalk.Taptalk.BuildConfig;
 
 public class DiskLruImageCache {
 
@@ -147,7 +147,6 @@ public class DiskLruImageCache {
         }
         diskCache.delete();
     }
-
     public void closeCache() throws IOException {
         diskCache.close();
     }

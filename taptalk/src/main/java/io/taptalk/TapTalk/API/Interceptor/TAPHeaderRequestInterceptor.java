@@ -8,7 +8,7 @@ import java.io.IOException;
 
 import io.taptalk.TapTalk.Helper.TapTalk;
 import io.taptalk.TapTalk.Manager.TAPDataManager;
-import io.taptalk.TapTalk.BuildConfig;
+import io.taptalk.Taptalk.BuildConfig;
 import okhttp3.Interceptor;
 import okhttp3.MultipartBody;
 import okhttp3.Request;
@@ -17,27 +17,24 @@ import okhttp3.Response;
 import static io.taptalk.TapTalk.Const.TAPDefaultConstant.TokenHeaderConst.MULTIPART_CONTENT_TYPE;
 
 public class TAPHeaderRequestInterceptor implements Interceptor {
-
     public static final String TAG = TAPHeaderRequestInterceptor.class.getSimpleName();
-    private String instanceKey = "";
     private int headerAuth;
 
-    public TAPHeaderRequestInterceptor(String instanceKey, int headerAuth) {
-        this.instanceKey = instanceKey;
+    public TAPHeaderRequestInterceptor(int headerAuth) {
         this.headerAuth = headerAuth;
     }
 
     @Override
     public Response intercept(Chain chain) throws IOException {
         Request original = chain.request();
-        String APP_KEY_ID = TAPDataManager.getInstance(instanceKey).getApplicationID();
-        String APP_KEY_SECRET = TAPDataManager.getInstance(instanceKey).getApplicationSecret();
-        String userAgent = TapTalk.getTapTalkInstance(instanceKey).tapTalkUserAgent;
+        String APP_KEY_ID = TAPDataManager.getInstance().getApplicationID();
+        String APP_KEY_SECRET = TAPDataManager.getInstance().getApplicationSecret();
+        String userAgent = TAPDataManager.getInstance().getUserAgent();
 
         String appKey = Base64.encodeToString((APP_KEY_ID + ":" + APP_KEY_SECRET).getBytes(), Base64.NO_WRAP);
 
         Context context = TapTalk.appContext;
-
+        
         String contentType = "application/json";
 
         if (MULTIPART_CONTENT_TYPE == headerAuth) {
@@ -63,7 +60,7 @@ public class TAPHeaderRequestInterceptor implements Interceptor {
         if (null == original.headers().get("Authorization")) {
             request = request
                     .newBuilder()
-                    .addHeader("Authorization", "Bearer " + TAPDataManager.getInstance(instanceKey).getAccessToken())
+                    .addHeader("Authorization", "Bearer " + TAPDataManager.getInstance().getAccessToken())
                     .build();
         }
 

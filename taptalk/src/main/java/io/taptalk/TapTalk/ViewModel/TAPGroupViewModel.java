@@ -1,10 +1,9 @@
 package io.taptalk.TapTalk.ViewModel;
 
 import android.app.Application;
+import android.arch.lifecycle.AndroidViewModel;
 import android.net.Uri;
-
-import androidx.annotation.NonNull;
-import androidx.lifecycle.AndroidViewModel;
+import android.support.annotation.NonNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,7 +42,7 @@ public class TAPGroupViewModel extends AndroidViewModel {
     }
 
     public List<String> getParticipantsIDs() {
-        return null == participantsIDs ? participantsIDs = new ArrayList<>() : participantsIDs;
+        return null == participantsIDs? participantsIDs = new ArrayList<>() : participantsIDs;
     }
 
     public void setParticipantsIDs(List<String> participantsIDs) {

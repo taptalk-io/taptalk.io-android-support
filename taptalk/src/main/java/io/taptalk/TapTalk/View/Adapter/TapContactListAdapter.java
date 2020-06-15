@@ -3,16 +3,15 @@ package io.taptalk.TapTalk.View.Adapter;
 import android.app.Activity;
 import android.content.res.ColorStateList;
 import android.graphics.drawable.Drawable;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.constraint.ConstraintLayout;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.widget.ImageViewCompat;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.core.content.ContextCompat;
-import androidx.core.widget.ImageViewCompat;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.DataSource;
@@ -31,7 +30,7 @@ import io.taptalk.TapTalk.Listener.TapContactListListener;
 import io.taptalk.TapTalk.Manager.TAPChatManager;
 import io.taptalk.TapTalk.Model.ResponseModel.TapContactListModel;
 import io.taptalk.TapTalk.Model.TAPUserModel;
-import io.taptalk.TapTalk.R;
+import io.taptalk.Taptalk.R;
 
 import static io.taptalk.TapTalk.Model.ResponseModel.TapContactListModel.MENU_ID_ADD_NEW_CONTACT;
 import static io.taptalk.TapTalk.Model.ResponseModel.TapContactListModel.MENU_ID_CREATE_NEW_GROUP;
@@ -44,18 +43,18 @@ import static io.taptalk.TapTalk.Model.ResponseModel.TapContactListModel.TYPE_SE
 
 public class TapContactListAdapter extends TAPBaseAdapter<TapContactListModel, TAPBaseViewHolder<TapContactListModel>> {
 
-    private String myID;
     private TapContactListListener listener;
+    private String myID;
 
-    public TapContactListAdapter(String instanceKey, List<TapContactListModel> contactList) {
+    public TapContactListAdapter(List<TapContactListModel> contactList) {
         setItems(contactList, false);
-        this.myID = TAPChatManager.getInstance(instanceKey).getActiveUser().getUserID();
+        this.myID = TAPChatManager.getInstance().getActiveUser().getUserID();
     }
 
-    public TapContactListAdapter(String instanceKey, List<TapContactListModel> contactList, TapContactListListener listener) {
+    public TapContactListAdapter(List<TapContactListModel> contactList, TapContactListListener listener) {
         setItems(contactList, false);
         this.listener = listener;
-        this.myID = TAPChatManager.getInstance(instanceKey).getActiveUser().getUserID();
+        this.myID = TAPChatManager.getInstance().getActiveUser().getUserID();
     }
 
     @Override

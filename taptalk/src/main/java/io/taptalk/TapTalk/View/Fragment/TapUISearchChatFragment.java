@@ -1,6 +1,13 @@
 package io.taptalk.TapTalk.View.Fragment;
 
+import android.arch.lifecycle.ViewModelProviders;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.constraint.ConstraintLayout;
+import android.support.v4.app.Fragment;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
@@ -8,14 +15,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageView;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProvider;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -37,7 +36,7 @@ import io.taptalk.TapTalk.Model.TAPSearchChatModel;
 import io.taptalk.TapTalk.Model.TAPUserModel;
 import io.taptalk.TapTalk.View.Adapter.TAPSearchChatAdapter;
 import io.taptalk.TapTalk.ViewModel.TAPSearchChatViewModel;
-import io.taptalk.TapTalk.R;
+import io.taptalk.Taptalk.R;
 
 import static io.taptalk.TapTalk.Const.TAPDefaultConstant.RoomType.TYPE_PERSONAL;
 import static io.taptalk.TapTalk.Model.TAPSearchChatModel.Type.EMPTY_STATE;
@@ -50,8 +49,6 @@ public class TapUISearchChatFragment extends Fragment {
 
     private static final String TAG = TapUISearchChatFragment.class.getSimpleName();
 
-    private String instanceKey = "";
-    private TapUIMainRoomListFragment mainRoomListFragment;
     private ConstraintLayout clActionBar;
     private ImageView ivButtonBack;
     private EditText etSearch;
@@ -64,12 +61,8 @@ public class TapUISearchChatFragment extends Fragment {
     public TapUISearchChatFragment() {
     }
 
-    public TapUISearchChatFragment(String instanceKey) {
-        this.instanceKey = instanceKey;
-    }
-
-    public static TapUISearchChatFragment newInstance(String instanceKey) {
-        TapUISearchChatFragment fragment = new TapUISearchChatFragment(instanceKey);
+    public static TapUISearchChatFragment newInstance() {
+        TapUISearchChatFragment fragment = new TapUISearchChatFragment();
         Bundle args = new Bundle();
         fragment.setArguments(args);
         return fragment;
@@ -82,7 +75,6 @@ public class TapUISearchChatFragment extends Fragment {
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        mainRoomListFragment = (TapUIMainRoomListFragment) this.getParentFragment();
         return inflater.inflate(R.layout.tap_fragment_search_chat, container, false);
     }
 
@@ -111,10 +103,7 @@ public class TapUISearchChatFragment extends Fragment {
     }
 
     private void initViewModel() {
-        vm = new ViewModelProvider(this,
-                new TAPSearchChatViewModel.TAPSearchChatViewModelFactory(
-                        getActivity().getApplication(), instanceKey))
-                .get(TAPSearchChatViewModel.class);
+        vm = ViewModelProviders.of(this).get(TAPSearchChatViewModel.class);
     }
 
     private void initView(View view) {
@@ -124,8 +113,8 @@ public class TapUISearchChatFragment extends Fragment {
         ivButtonClearText = view.findViewById(R.id.iv_button_clear_text);
         recyclerView = view.findViewById(R.id.recyclerView);
 
-        boolean isContactAvailable = TapUI.getInstance(instanceKey).isNewContactMenuButtonVisible() || TapUI.getInstance(instanceKey).isScanQRMenuButtonVisible();
-        boolean isGroupChatAvailable = TapUI.getInstance(instanceKey).isNewGroupMenuButtonVisible();
+        boolean isContactAvailable = TapUI.getInstance().isNewContactMenuButtonVisible() || TapUI.getInstance().isScanQRMenuButtonVisible();
+        boolean isGroupChatAvailable = TapUI.getInstance().isNewGroupMenuButtonVisible();
 
         if (isContactAvailable && isGroupChatAvailable) {
             etSearch.setHint(getString(R.string.tap_search_chat_placeholder));
@@ -139,7 +128,7 @@ public class TapUISearchChatFragment extends Fragment {
 
         etSearch.addTextChangedListener(searchTextWatcher);
 
-        adapter = new TAPSearchChatAdapter(instanceKey, vm.getSearchResults(), Glide.with(this));
+        adapter = new TAPSearchChatAdapter(vm.getSearchResults(), Glide.with(this));
         recyclerView.setAdapter(adapter);
         recyclerView.setHasFixedSize(false);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
@@ -169,7 +158,7 @@ public class TapUISearchChatFragment extends Fragment {
 
     private void setRecentSearchItemsFromDatabase() {
         // Observe database with live data
-        vm.getRecentSearchList().observe(getViewLifecycleOwner(), hpRecentSearchEntities -> {
+        vm.getRecentSearchList().observe(this, hpRecentSearchEntities -> {
             vm.clearRecentSearches();
 
             if (null != hpRecentSearchEntities && hpRecentSearchEntities.size() > 0) {
@@ -229,7 +218,7 @@ public class TapUISearchChatFragment extends Fragment {
         } else if (vm.getSearchState() == vm.STATE_RECENT_SEARCHES || vm.getSearchState() == vm.STATE_IDLE) {
             // Search with keyword
             vm.setSearchState(vm.STATE_SEARCHING);
-            TAPDataManager.getInstance(instanceKey).searchAllRoomsFromDatabase(vm.getSearchKeyword(), roomSearchListener);
+            TAPDataManager.getInstance().searchAllRoomsFromDatabase(vm.getSearchKeyword(), roomSearchListener);
             ivButtonClearText.setVisibility(View.VISIBLE);
         } else {
             // Set search as pending
@@ -240,7 +229,7 @@ public class TapUISearchChatFragment extends Fragment {
 
     private TAPDatabaseListener<TAPMessageEntity> roomSearchListener = new TAPDatabaseListener<TAPMessageEntity>() {
         @Override
-        public void onSelectedRoomList(List<TAPMessageEntity> entities, Map<String, Integer> unreadMap, Map<String, Integer> mentionMap) {
+        public void onSelectedRoomList(List<TAPMessageEntity> entities, Map<String, Integer> unreadMap) {
             if (vm.getSearchState() == vm.STATE_PENDING && !vm.getPendingSearch().isEmpty()) {
                 vm.setSearchState(vm.STATE_IDLE);
                 startSearch(vm.getPendingSearch());
@@ -253,32 +242,25 @@ public class TapUISearchChatFragment extends Fragment {
                 sectionTitleChatsAndContacts.setSectionTitle(getString(R.string.tap_chats_and_contacts));
                 vm.addSearchResult(sectionTitleChatsAndContacts);
                 for (TAPMessageEntity entity : entities) {
-                    String myId = TAPChatManager.getInstance(instanceKey).getActiveUser().getUserID();
+                    String myId = TAPChatManager.getInstance().getActiveUser().getUserID();
                     // Exclude active user's own room
-                    if (!entity.getRoomID().equals(TAPChatManager.getInstance(instanceKey).arrangeRoomId(myId, myId))) {
+                    if (!entity.getRoomID().equals(TAPChatManager.getInstance().arrangeRoomId(myId, myId))) {
                         TAPSearchChatModel result = new TAPSearchChatModel(ROOM_ITEM);
                         // Convert message to room model
                         TAPRoomModel room = TAPRoomModel.Builder(entity);
-                        Integer unreadCount = unreadMap.get(room.getRoomID());
-                        if (null != unreadCount) {
-                            room.setUnreadCount(unreadCount);
-                        }
+                        room.setUnreadCount(unreadMap.get(room.getRoomID()));
                         result.setRoom(room);
-                        Integer mentionCount = mentionMap.get(room.getRoomID());
-                        if (null != mentionCount) {
-                            result.setRoomMentionCount(mentionCount);
-                        }
                         vm.addSearchResult(result);
                     }
                 }
                 if (null != contactSearchListener) {
                     getActivity().runOnUiThread(() -> {
                         adapter.setItems(vm.getSearchResults(), false);
-                        TAPDataManager.getInstance(instanceKey).searchContactsByName(vm.getSearchKeyword(), contactSearchListener);
+                        TAPDataManager.getInstance().searchContactsByName(vm.getSearchKeyword(), contactSearchListener);
                     });
                 }
             } else if (null != contactSearchListener) {
-                TAPDataManager.getInstance(instanceKey).searchContactsByName(vm.getSearchKeyword(), contactSearchListener);
+                TAPDataManager.getInstance().searchContactsByName(vm.getSearchKeyword(), contactSearchListener);
             }
         }
     };
@@ -304,7 +286,7 @@ public class TapUISearchChatFragment extends Fragment {
                     // Convert contact to room model
                     // TODO: 18 October 2018 LENGKAPIN DATA
                     TAPRoomModel room = new TAPRoomModel(
-                            TAPChatManager.getInstance(instanceKey).arrangeRoomId(TAPChatManager.getInstance(instanceKey).getActiveUser().getUserID(), contact.getUserID()),
+                            TAPChatManager.getInstance().arrangeRoomId(TAPChatManager.getInstance().getActiveUser().getUserID(), contact.getUserID()),
                             contact.getName(),
                             TYPE_PERSONAL,
                             contact.getAvatarURL(),
@@ -320,11 +302,11 @@ public class TapUISearchChatFragment extends Fragment {
                 if (null != getActivity() && null != messageSearchListener) {
                     getActivity().runOnUiThread(() -> {
                         adapter.setItems(vm.getSearchResults(), false);
-                        TAPDataManager.getInstance(instanceKey).searchAllMessagesFromDatabase(vm.getSearchKeyword(), messageSearchListener);
+                        TAPDataManager.getInstance().searchAllMessagesFromDatabase(vm.getSearchKeyword(), messageSearchListener);
                     });
                 }
             } else if (null != messageSearchListener) {
-                TAPDataManager.getInstance(instanceKey).searchAllMessagesFromDatabase(vm.getSearchKeyword(), messageSearchListener);
+                TAPDataManager.getInstance().searchAllMessagesFromDatabase(vm.getSearchKeyword(), messageSearchListener);
             }
         }
     };

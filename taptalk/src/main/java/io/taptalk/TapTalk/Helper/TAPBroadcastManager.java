@@ -3,8 +3,7 @@ package io.taptalk.TapTalk.Helper;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.IntentFilter;
-
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+import android.support.v4.content.LocalBroadcastManager;
 
 public class TAPBroadcastManager {
 

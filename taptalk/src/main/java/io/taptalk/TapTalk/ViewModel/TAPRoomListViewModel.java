@@ -1,14 +1,10 @@
 package io.taptalk.TapTalk.ViewModel;
 
 import android.app.Application;
-
-import androidx.annotation.NonNull;
-import androidx.lifecycle.AndroidViewModel;
-import androidx.lifecycle.ViewModel;
-import androidx.lifecycle.ViewModelProvider;
+import android.arch.lifecycle.AndroidViewModel;
+import android.support.annotation.NonNull;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,47 +13,22 @@ import io.taptalk.TapTalk.Manager.TAPChatManager;
 import io.taptalk.TapTalk.Model.TAPRoomListModel;
 
 public class TAPRoomListViewModel extends AndroidViewModel {
-    private String instanceKey = "";
     private List<TAPRoomListModel> roomList;
     private Map<String, TAPRoomListModel> roomPointer;
     private Map<String, TAPRoomListModel> selectedRooms;
-    private String myUserID;
-    private int roomBadgeCount;
-    private int lastBadgeCount;
     private boolean isSelecting;
+    private static boolean isShouldNotLoadFromAPI = false;
     private boolean isDoneFirstSetup = false;
     private boolean isDoneFirstApiSetup = false;
+    private int roomBadgeCount;
+    private int lastBadgeCount;
+    private String myUserID;
 
-    private static HashMap<String, Boolean> isShouldNotLoadFromAPI = new HashMap<>();
-
-    public static class TAPRoomListViewModelFactory implements ViewModelProvider.Factory {
-        private Application application;
-        private String instanceKey;
-
-        public TAPRoomListViewModelFactory(Application application, String instanceKey) {
-            this.application = application;
-            this.instanceKey = instanceKey;
-        }
-
-        @NonNull
-        @Override
-        @SuppressWarnings("unchecked")
-        public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
-            return (T) new TAPRoomListViewModel(application, instanceKey);
-        }
-    }
-
-    public TAPRoomListViewModel(@NonNull Application application, String instanceKey) {
+    public TAPRoomListViewModel(@NonNull Application application) {
         super(application);
-        this.instanceKey = instanceKey;
-    }
-
-    public String getInstanceKey() {
-        return instanceKey;
-    }
-
-    public void setInstanceKey(String instanceKey) {
-        this.instanceKey = instanceKey;
+        myUserID = null != TAPChatManager.getInstance().getActiveUser() ?
+                TAPChatManager.getInstance().getActiveUser().getUserID()
+                : null;
     }
 
     public List<TAPRoomListModel> getRoomList() {
@@ -84,7 +55,7 @@ public class TAPRoomListViewModel extends AndroidViewModel {
         this.roomPointer = roomPointer;
     }
 
-    public void addRoomPointer(TAPRoomListModel roomModel) {
+    public void addRoomPointer(TAPRoomListModel roomModel){
         getRoomPointer().put(roomModel.getLastMessage().getRoom().getRoomID(), roomModel);
     }
 
@@ -109,26 +80,19 @@ public class TAPRoomListViewModel extends AndroidViewModel {
     }
 
     public String getMyUserID() {
-        return null == myUserID ?
-                null != TAPChatManager.getInstance(instanceKey).getActiveUser() ?
-                        myUserID = TAPChatManager.getInstance(instanceKey).getActiveUser().getUserID() :
-                        null
-                : myUserID;
+        return myUserID;
     }
 
     public void setMyUserID(String myUserID) {
         this.myUserID = myUserID;
     }
 
-    public static Boolean isShouldNotLoadFromAPI(String instanceKey) {
-        if (null == isShouldNotLoadFromAPI.get(instanceKey)) {
-            isShouldNotLoadFromAPI.put(instanceKey, false);
-        }
-        return isShouldNotLoadFromAPI.get(instanceKey);
+    public static boolean isShouldNotLoadFromAPI() {
+        return isShouldNotLoadFromAPI;
     }
 
-    public static void setShouldNotLoadFromAPI(String instanceKey, boolean shouldNotLoadFromAPI) {
-        isShouldNotLoadFromAPI.put(instanceKey, shouldNotLoadFromAPI);
+    public static void setShouldNotLoadFromAPI(boolean shouldNotLoadFromAPI) {
+        isShouldNotLoadFromAPI = shouldNotLoadFromAPI;
     }
 
     public boolean isDoneFirstSetup() {
