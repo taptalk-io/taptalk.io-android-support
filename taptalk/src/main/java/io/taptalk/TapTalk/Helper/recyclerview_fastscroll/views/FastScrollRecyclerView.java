@@ -34,7 +34,7 @@ import android.view.View;
 
 import io.taptalk.TapTalk.Helper.TAPUtils;
 import io.taptalk.TapTalk.Helper.recyclerview_fastscroll.interfaces.OnFastScrollStateChangeListener;
-import io.taptalk.Taptalk.R;
+import io.taptalk.TapTalk.R;
 
 public class FastScrollRecyclerView extends RecyclerView implements RecyclerView.OnItemTouchListener {
 

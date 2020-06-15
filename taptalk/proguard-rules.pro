@@ -119,7 +119,7 @@
 #-keepclassmembers enum * { *; }
 
 
-# Proguard for Taptalk apps Class
+# Proguard for TapTalk apps Class
 -keep class io.** { *; }
 
 # Retrofit

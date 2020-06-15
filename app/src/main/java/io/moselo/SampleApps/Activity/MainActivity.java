@@ -8,7 +8,7 @@ import android.view.View;
 import io.taptalk.TapTalk.Manager.AnalyticsManager;
 import io.taptalk.TapTalk.Manager.TAPDataManager;
 import io.taptalk.TapTalk.View.Activity.TapUIRoomListActivity;
-import io.taptalk.TaptalkSample.R;
+import io.taptalk.TapTalkSample.R;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 

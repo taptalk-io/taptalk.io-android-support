@@ -10,7 +10,7 @@ import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.util.Log;
 
-import io.taptalk.Taptalk.R;
+import io.taptalk.TapTalk.R;
 
 
 /**

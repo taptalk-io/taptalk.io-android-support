@@ -12,7 +12,7 @@ import android.view.ViewGroup;
 
 import io.taptalk.TapTalk.Listener.TAPAttachmentListener;
 import io.taptalk.TapTalk.View.Adapter.TAPAttachmentAdapter;
-import io.taptalk.Taptalk.R;
+import io.taptalk.TapTalk.R;
 
 public class TAPAttachmentBottomSheet extends BottomSheetDialogFragment {
 

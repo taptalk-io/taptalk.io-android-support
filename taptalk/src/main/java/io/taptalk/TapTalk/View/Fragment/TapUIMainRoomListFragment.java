@@ -13,8 +13,8 @@ import io.taptalk.TapTalk.Helper.TapTalk;
 import io.taptalk.TapTalk.Helper.TapTalkDialog;
 import io.taptalk.TapTalk.Listener.TapListener;
 import io.taptalk.TapTalk.Manager.TAPChatManager;
-import io.taptalk.Taptalk.BuildConfig;
-import io.taptalk.Taptalk.R;
+import io.taptalk.TapTalk.BuildConfig;
+import io.taptalk.TapTalk.R;
 
 public class TapUIMainRoomListFragment extends Fragment {
     private static final String TAG = TapUIMainRoomListFragment.class.getSimpleName();

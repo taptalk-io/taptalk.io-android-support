@@ -19,7 +19,7 @@ import io.taptalk.TapTalk.Helper.QRCode.MultiFormatWriter;
 import io.taptalk.TapTalk.Helper.QRCode.WriterException;
 import io.taptalk.TapTalk.Manager.TAPChatManager;
 import io.taptalk.TapTalk.View.Activity.TAPBarcodeScannerActivity;
-import io.taptalk.Taptalk.R;
+import io.taptalk.TapTalk.R;
 
 public class TAPShowQRFragment extends Fragment {
 

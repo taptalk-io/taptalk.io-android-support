@@ -42,7 +42,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewOutlineProvider;
 
-import io.taptalk.Taptalk.R;
+import io.taptalk.TapTalk.R;
 
 public class CircleImageView extends android.support.v7.widget.AppCompatImageView {
 
