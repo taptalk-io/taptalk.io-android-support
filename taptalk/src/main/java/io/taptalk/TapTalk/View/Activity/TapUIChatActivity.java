@@ -34,7 +34,6 @@ import android.text.Editable;
 import android.text.Html;
 import android.text.TextUtils;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
@@ -110,13 +109,13 @@ import io.taptalk.TapTalk.Model.TAPOnlineStatusModel;
 import io.taptalk.TapTalk.Model.TAPRoomModel;
 import io.taptalk.TapTalk.Model.TAPTypingModel;
 import io.taptalk.TapTalk.Model.TAPUserModel;
+import io.taptalk.TapTalk.R;
 import io.taptalk.TapTalk.View.Adapter.TAPCustomKeyboardAdapter;
 import io.taptalk.TapTalk.View.Adapter.TAPMessageAdapter;
 import io.taptalk.TapTalk.View.BottomSheet.TAPAttachmentBottomSheet;
 import io.taptalk.TapTalk.View.BottomSheet.TAPLongPressActionBottomSheet;
 import io.taptalk.TapTalk.View.Fragment.TAPConnectionStatusFragment;
 import io.taptalk.TapTalk.ViewModel.TAPChatViewModel;
-import io.taptalk.TapTalk.R;
 
 import static io.taptalk.TapTalk.Const.TAPDefaultConstant.ApiErrorCode.USER_NOT_FOUND;
 import static io.taptalk.TapTalk.Const.TAPDefaultConstant.CLEAR_ROOM_LIST_BADGE;
@@ -1456,7 +1455,7 @@ public class TapUIChatActivity extends TAPBaseChatActivity {
     }
 
     private void checkChatRoomLocked(TAPMessageModel message) {
-        if (null != message && message.getRoom().isLocked()) {
+        if (null != message && null != message.getRoom() && message.getRoom().isLocked()) {
             lockChatRoom();
         } else {
             clChatComposer.setVisibility(View.VISIBLE);
