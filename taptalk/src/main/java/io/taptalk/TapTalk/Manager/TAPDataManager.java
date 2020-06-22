@@ -24,6 +24,7 @@ import io.taptalk.TapTalk.API.RequestBody.ProgressRequestBody;
 import io.taptalk.TapTalk.API.Subscriber.TAPBaseSubscriber;
 import io.taptalk.TapTalk.API.Subscriber.TAPDefaultSubscriber;
 import io.taptalk.TapTalk.API.View.TAPDefaultDataView;
+import io.taptalk.TapTalk.BuildConfig;
 import io.taptalk.TapTalk.Data.Message.TAPMessageEntity;
 import io.taptalk.TapTalk.Data.RecentSearch.TAPRecentSearchEntity;
 import io.taptalk.TapTalk.Helper.TAPUtils;
@@ -56,7 +57,6 @@ import io.taptalk.TapTalk.Model.TAPErrorModel;
 import io.taptalk.TapTalk.Model.TAPRoomModel;
 import io.taptalk.TapTalk.Model.TAPUserModel;
 import io.taptalk.TapTalk.Model.TapConfigs;
-import io.taptalk.TapTalk.BuildConfig;
 import okhttp3.ResponseBody;
 
 import static io.taptalk.TapTalk.Const.TAPDefaultConstant.CustomHeaderKey.APP_ID;
@@ -140,42 +140,52 @@ public class TAPDataManager {
      */
 
     private void saveBooleanPreference(String key, boolean bool) {
+        if (!Hawk.isBuilt()) TapTalk.initHawk();
         Hawk.put(key, bool);
     }
 
     private void saveStringPreference(String key, String string) {
+        if (!Hawk.isBuilt()) TapTalk.initHawk();
         Hawk.put(key, string);
     }
 
     private void saveFloatPreference(String key, Float flt) {
+        if (!Hawk.isBuilt()) TapTalk.initHawk();
         Hawk.put(key, flt);
     }
 
     private void saveLongTimestampPreference(String key, Long timestamp) {
+        if (!Hawk.isBuilt()) TapTalk.initHawk();
         Hawk.put(key, timestamp);
     }
 
     private Boolean getBooleanPreference(String key) {
+        if (!Hawk.isBuilt()) TapTalk.initHawk();
         return Hawk.get(key, false);
     }
 
     private String getStringPreference(String key) {
+        if (!Hawk.isBuilt()) TapTalk.initHawk();
         return Hawk.get(key, "");
     }
 
     private Float getFloatPreference(String key) {
+        if (!Hawk.isBuilt()) TapTalk.initHawk();
         return Hawk.get(key, null);
     }
 
     private Long getLongTimestampPreference(String key) {
+        if (!Hawk.isBuilt()) TapTalk.initHawk();
         return Hawk.get(key, 0L);
     }
 
     private Boolean checkPreferenceKeyAvailable(String key) {
+        if (!Hawk.isBuilt()) TapTalk.initHawk();
         return Hawk.contains(key);
     }
 
     private void removePreference(String key) {
+        if (!Hawk.isBuilt()) TapTalk.initHawk();
         Hawk.delete(key);
     }
 
@@ -214,26 +224,32 @@ public class TAPDataManager {
      * PROJECT CONFIGS
      */
     public Map<String, String> getCoreConfigs() {
+        if (!Hawk.isBuilt()) TapTalk.initHawk();
         return Hawk.get(CORE, new HashMap<>());
     }
 
     public void saveCoreConfigs(Map<String, String> coreProjectConfigs) {
+        if (!Hawk.isBuilt()) TapTalk.initHawk();
         Hawk.put(CORE, coreProjectConfigs);
     }
 
     public Map<String, String> getProjectConfigs() {
+        if (!Hawk.isBuilt()) TapTalk.initHawk();
         return Hawk.get(PROJECT, new HashMap<>());
     }
 
     public void saveProjectConfigs(Map<String, String> coreProjectConfigs) {
+        if (!Hawk.isBuilt()) TapTalk.initHawk();
         Hawk.put(PROJECT, coreProjectConfigs);
     }
 
     public Map<String, String> getCustomConfigs() {
+        if (!Hawk.isBuilt()) TapTalk.initHawk();
         return Hawk.get(CUSTOM, new HashMap<>());
     }
 
     public void saveCustomConfigs(Map<String, String> coreProjectConfigs) {
+        if (!Hawk.isBuilt()) TapTalk.initHawk();
         Hawk.put(CUSTOM, coreProjectConfigs);
     }
 
@@ -247,10 +263,12 @@ public class TAPDataManager {
      * COUNTRY LIST
      */
     public ArrayList<TAPCountryListItem> getCountryList() {
+        if (!Hawk.isBuilt()) TapTalk.initHawk();
         return Hawk.get(K_COUNTRY_LIST, new ArrayList<>());
     }
 
     public void saveCountryList(ArrayList<TAPCountryListItem> countries) {
+        if (!Hawk.isBuilt()) TapTalk.initHawk();
         Hawk.put(K_COUNTRY_LIST, countries);
     }
 
@@ -281,10 +299,12 @@ public class TAPDataManager {
     }
 
     public TAPUserModel getActiveUser() {
+        if (!Hawk.isBuilt()) TapTalk.initHawk();
         return Hawk.get(K_USER, null);
     }
 
     public void saveActiveUser(TAPUserModel user) {
+        if (!Hawk.isBuilt()) TapTalk.initHawk();
         Hawk.put(K_USER, user);
         TAPChatManager.getInstance().setActiveUser(user);
     }
@@ -384,6 +404,7 @@ public class TAPDataManager {
     }
 
     private HashMap<String, Long> getLastUpdatedMessageTimestampMap() {
+        if (!Hawk.isBuilt()) TapTalk.initHawk();
         return Hawk.get(K_LAST_UPDATED, null);
     }
 
@@ -394,6 +415,7 @@ public class TAPDataManager {
         else tempLastUpdated = new LinkedHashMap<>();
 
         tempLastUpdated.put(roomID, lastUpdated);
+        if (!Hawk.isBuilt()) TapTalk.initHawk();
         Hawk.put(K_LAST_UPDATED, tempLastUpdated);
     }
 
@@ -406,10 +428,12 @@ public class TAPDataManager {
      */
 
     public HashMap<String, Long> getUserLastActivityMap() {
+        if (!Hawk.isBuilt()) TapTalk.initHawk();
         return Hawk.get(K_USER_LAST_ACTIVITY);
     }
 
     public void saveUserLastActivityMap(HashMap<String, Long> userLastActivityMap) {
+        if (!Hawk.isBuilt()) TapTalk.initHawk();
         Hawk.put(K_USER_LAST_ACTIVITY, userLastActivityMap);
     }
 
@@ -420,11 +444,14 @@ public class TAPDataManager {
     /**
      * SAVE GROUP DATA
      */
+
     public HashMap<String, TAPRoomModel> getRoomDataMap() {
+        if (!Hawk.isBuilt()) TapTalk.initHawk();
         return Hawk.get(K_GROUP_DATA_MAP);
     }
 
     public void saveRoomDataMap(HashMap<String, TAPRoomModel> roomDataMap) {
+        if (!Hawk.isBuilt()) TapTalk.initHawk();
         Hawk.put(K_GROUP_DATA_MAP, roomDataMap);
     }
 
@@ -433,6 +460,7 @@ public class TAPDataManager {
     }
 
     public boolean isRoomDataMapAvailable() {
+        if (!Hawk.isBuilt()) TapTalk.initHawk();
         return Hawk.contains(K_GROUP_DATA_MAP) && null != Hawk.get(K_GROUP_DATA_MAP);
     }
 
@@ -469,6 +497,7 @@ public class TAPDataManager {
      */
 
     private HashMap<String, Boolean> getChatRoomContactActionsMap() {
+        if (!Hawk.isBuilt()) TapTalk.initHawk();
         return Hawk.get(K_CHAT_ROOM_CONTACT_ACTION, new HashMap<>());
     }
 
@@ -478,6 +507,7 @@ public class TAPDataManager {
     }
 
     public void saveChatRoomContactActionDismissed(String roomID) {
+        if (!Hawk.isBuilt()) TapTalk.initHawk();
         HashMap<String, Boolean> map = getChatRoomContactActionsMap();
         map.put(roomID, true);
         Hawk.put(K_CHAT_ROOM_CONTACT_ACTION, map);
@@ -535,10 +565,12 @@ public class TAPDataManager {
      * FILE PROVIDER PATH
      */
     public HashMap<String, String> getFileProviderPathMap() {
+        if (!Hawk.isBuilt()) TapTalk.initHawk();
         return Hawk.get(K_FILE_PATH_MAP, null);
     }
 
     public void saveFileProviderPathMap(HashMap<String, String> fileProviderPathMap) {
+        if (!Hawk.isBuilt()) TapTalk.initHawk();
         Hawk.put(K_FILE_PATH_MAP, fileProviderPathMap);
     }
 
@@ -550,10 +582,12 @@ public class TAPDataManager {
      * FILE URI CACHE
      */
     public HashMap<String, HashMap<String, String>> getFileMessageUriMap() {
+        if (!Hawk.isBuilt()) TapTalk.initHawk();
         return Hawk.get(K_FILE_URI_MAP, null);
     }
 
     public void saveFileMessageUriMap(HashMap<String, HashMap<String, String>> fileUriMap) {
+        if (!Hawk.isBuilt()) TapTalk.initHawk();
         Hawk.put(K_FILE_URI_MAP, fileUriMap);
     }
 

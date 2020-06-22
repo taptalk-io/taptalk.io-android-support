@@ -6,6 +6,7 @@ import com.orhanobut.hawk.Hawk;
 
 import io.taptalk.TapTalk.Helper.TAPAutoStartPermission;
 import io.taptalk.TapTalk.Helper.TAPUtils;
+import io.taptalk.TapTalk.Helper.TapTalk;
 import io.taptalk.TapTalk.Model.TAPRoomModel;
 import io.taptalk.TapTalk.View.Fragment.TapUIMainRoomListFragment;
 import io.taptalk.TapTalk.R;
@@ -53,6 +54,7 @@ public class TapUIRoomListActivity extends TAPBaseActivity {
 
     //This is for Sample Apps
     private void requestForAutoStartPermission() {
+        if (!Hawk.isBuilt()) TapTalk.initHawk();
         if (!Hawk.contains(AUTO_START_PERMISSION)) {
             TAPAutoStartPermission.getInstance().showPermissionRequest(this);
             Hawk.put(AUTO_START_PERMISSION, true);
