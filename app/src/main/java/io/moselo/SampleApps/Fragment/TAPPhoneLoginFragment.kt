@@ -360,7 +360,7 @@ class TAPPhoneLoginFragment : Fragment() {
         countryFlagUrl = flagIconUrl
 
         if ("" != flagIconUrl)
-            Glide.with(this).load(flagIconUrl).apply(object : RequestOptions() {}.centerCrop()).into(iv_country_flag)
+            Glide.with(this).load(flagIconUrl).into(iv_country_flag)
         else iv_country_flag.setImageResource(R.drawable.tap_ic_default_flag)
     }
 }
