@@ -426,22 +426,26 @@ public class TAPBetterLinkMovementMethod extends LinkMovementMethod {
         private String originalText;
 
         protected static ClickableSpanWithText ofSpan(TextView textView, ClickableSpan span) {
-            CharSequence oriCharSequence = textView.getText();
-            Spanned s = (Spanned) oriCharSequence;
-            String text;
-            String originalText;
-            if (span instanceof URLSpan) {
-                text = ((URLSpan) span).getURL();
-                int start = s.getSpanStart(span);
-                int end = s.getSpanEnd(span);
-                originalText = s.subSequence(start, end).toString();
-            } else {
-                int start = s.getSpanStart(span);
-                int end = s.getSpanEnd(span);
-                text = s.subSequence(start, end).toString();
-                originalText = text;
+            try {
+                CharSequence oriCharSequence = textView.getText();
+                Spanned s = (Spanned) oriCharSequence;
+                String text;
+                String originalText;
+                if (span instanceof URLSpan) {
+                    text = ((URLSpan) span).getURL();
+                    int start = s.getSpanStart(span);
+                    int end = s.getSpanEnd(span);
+                    originalText = s.subSequence(start, end).toString();
+                } else {
+                    int start = s.getSpanStart(span);
+                    int end = s.getSpanEnd(span);
+                    text = s.subSequence(start, end).toString();
+                    originalText = text;
+                }
+                return new ClickableSpanWithText(span, text, originalText);
+            } catch (Exception e) {
+                return null;
             }
-            return new ClickableSpanWithText(span, text, originalText);
         }
 
         protected ClickableSpanWithText(ClickableSpan span, String text, String originalText) {
