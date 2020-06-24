@@ -2,6 +2,7 @@ package io.taptalk.TapTalk.View.BottomSheet
 
 import android.os.Bundle
 import android.support.design.widget.BottomSheetDialogFragment
+import android.support.v4.app.FragmentManager
 import android.support.v7.widget.LinearLayoutManager
 import android.view.LayoutInflater
 import android.view.View
@@ -13,6 +14,7 @@ import io.taptalk.TapTalk.Model.TAPMessageModel
 import io.taptalk.TapTalk.View.Adapter.TAPAttachmentAdapter
 import io.taptalk.TapTalk.R
 import kotlinx.android.synthetic.main.tap_fragment_long_press_action_bottom_sheet.*
+import java.lang.IllegalStateException
 
 class TAPLongPressActionBottomSheet : BottomSheetDialogFragment {
 
@@ -124,5 +126,13 @@ class TAPLongPressActionBottomSheet : BottomSheetDialogFragment {
         rv_long_press.adapter = longPressAdapter
         rv_long_press.layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
         rv_long_press.setHasFixedSize(true)
+    }
+
+    override fun show(manager: FragmentManager, tag: String?) {
+        try {
+            super.show(manager, tag)
+        } catch (e: IllegalStateException) {
+            e.printStackTrace()
+        }
     }
 }
