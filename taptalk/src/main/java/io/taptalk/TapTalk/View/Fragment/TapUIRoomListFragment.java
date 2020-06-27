@@ -31,6 +31,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.DataSource;
@@ -45,6 +46,7 @@ import java.util.List;
 import java.util.Map;
 
 import io.taptalk.TapTalk.API.View.TAPDefaultDataView;
+import io.taptalk.TapTalk.BuildConfig;
 import io.taptalk.TapTalk.Data.Message.TAPMessageEntity;
 import io.taptalk.TapTalk.Helper.CircleImageView;
 import io.taptalk.TapTalk.Helper.OverScrolled.OverScrollDecoratorHelper;
@@ -56,6 +58,7 @@ import io.taptalk.TapTalk.Interface.TapTalkNetworkInterface;
 import io.taptalk.TapTalk.Interface.TapTalkRoomListInterface;
 import io.taptalk.TapTalk.Listener.TAPChatListener;
 import io.taptalk.TapTalk.Listener.TAPDatabaseListener;
+import io.taptalk.TapTalk.Listener.TapCommonListener;
 import io.taptalk.TapTalk.Listener.TapListener;
 import io.taptalk.TapTalk.Manager.AnalyticsManager;
 import io.taptalk.TapTalk.Manager.TAPChatManager;
@@ -74,10 +77,9 @@ import io.taptalk.TapTalk.Model.TAPMessageModel;
 import io.taptalk.TapTalk.Model.TAPRoomListModel;
 import io.taptalk.TapTalk.Model.TAPTypingModel;
 import io.taptalk.TapTalk.Model.TAPUserModel;
+import io.taptalk.TapTalk.R;
 import io.taptalk.TapTalk.View.Adapter.TAPRoomListAdapter;
 import io.taptalk.TapTalk.ViewModel.TAPRoomListViewModel;
-import io.taptalk.TapTalk.BuildConfig;
-import io.taptalk.TapTalk.R;
 
 import static io.taptalk.TapTalk.Const.TAPDefaultConstant.CLEAR_ROOM_LIST_BADGE;
 import static io.taptalk.TapTalk.Const.TAPDefaultConstant.Extras.ROOM_ID;
@@ -146,6 +148,22 @@ public class TapUIRoomListFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        if (!TapTalk.isAutoConnectEnabled() && !TapTalk.isConnected()) {
+            Toast.makeText(getContext(), "Connecting to Socket", Toast.LENGTH_SHORT).show();
+            TapTalk.connect(new TapCommonListener() {
+                @Override
+                public void onSuccess(String successMessage) {
+                    super.onSuccess(successMessage);
+                    Toast.makeText(getContext(), "Socket Connected", Toast.LENGTH_SHORT).show();
+                }
+
+                @Override
+                public void onError(String errorCode, String errorMessage) {
+                    super.onError(errorCode, errorMessage);
+                    Toast.makeText(getContext(), "Fail Connect to Socket", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
         if (TAPGroupManager.Companion.getGetInstance().getRefreshRoomList()) {
             runFullRefreshSequence();
         }
@@ -162,6 +180,11 @@ public class TapUIRoomListFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
+
+        if (!TapTalk.isAutoConnectEnabled() && TapTalk.isConnected()) {
+            TapTalk.disconnect();
+        }
+
         TAPNotificationManager.getInstance().setRoomListAppear(false);
         TAPBroadcastManager.unregister(activity, refreshTokenReceiver);
         removeNetworkListener();

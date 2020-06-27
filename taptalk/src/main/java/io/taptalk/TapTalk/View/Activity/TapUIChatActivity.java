@@ -83,6 +83,7 @@ import io.taptalk.TapTalk.Listener.TAPAttachmentListener;
 import io.taptalk.TapTalk.Listener.TAPChatListener;
 import io.taptalk.TapTalk.Listener.TAPDatabaseListener;
 import io.taptalk.TapTalk.Listener.TAPSocketListener;
+import io.taptalk.TapTalk.Listener.TapCommonListener;
 import io.taptalk.TapTalk.Listener.TapListener;
 import io.taptalk.TapTalk.Manager.TAPCacheManager;
 import io.taptalk.TapTalk.Manager.TAPChatManager;
@@ -272,6 +273,22 @@ public class TapUIChatActivity extends TAPBaseChatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        if (!TapTalk.isAutoConnectEnabled() && !TapTalk.isConnected()) {
+            Toast.makeText(TapUIChatActivity.this, "Connecting to Socket", Toast.LENGTH_SHORT).show();
+            TapTalk.connect(new TapCommonListener() {
+                @Override
+                public void onSuccess(String successMessage) {
+                    super.onSuccess(successMessage);
+                    Toast.makeText(TapUIChatActivity.this, "Socket Connected", Toast.LENGTH_SHORT).show();
+                }
+
+                @Override
+                public void onError(String errorCode, String errorMessage) {
+                    super.onError(errorCode, errorMessage);
+                    Toast.makeText(TapUIChatActivity.this, "Fail Connect to Socket", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
         TAPChatManager.getInstance().setActiveRoom(vm.getRoom());
         etChat.setText(TAPChatManager.getInstance().getMessageFromDraft());
         showQuoteLayout(vm.getQuotedMessage(), vm.getQuoteAction(), false);
@@ -305,6 +322,10 @@ public class TapUIChatActivity extends TAPBaseChatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+
+        if (!TapTalk.isAutoConnectEnabled() && TapTalk.isConnected()) {
+            TapTalk.disconnect();
+        }
 
         // Reload UI in room list
         Intent intent = new Intent(RELOAD_ROOM_LIST);
