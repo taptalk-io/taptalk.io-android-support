@@ -196,6 +196,9 @@
         android:background="@color/tapDefaultNavBarBackgroundColor"
         android:elevation="1dp"
         android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@id/fl_message_list"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/cl_action_bar">
 
         <TextView
@@ -253,6 +256,8 @@
         android:layout_height="0dp"
         android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@id/fl_chat_composer_and_history"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/cl_contact_action">
 
         <android.support.constraint.ConstraintLayout
@@ -357,6 +362,8 @@
         android:descendantFocusability="blocksDescendants"
         android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@id/fl_chat_composer_and_history"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/cl_contact_action"
         tools:background="@color/tapTransparentCharcoal40">
 
@@ -377,6 +384,8 @@
         android:descendantFocusability="blocksDescendants"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/cl_contact_action"
         tools:background="@color/tapTransparentCharcoal40">
 
@@ -388,6 +397,8 @@
         android:id="@+id/fl_loading"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/cl_contact_action">
 
         <fragment
@@ -447,7 +458,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:animateLayoutChanges="true"
-        app:layout_constraintBottom_toTopOf="@id/rv_custom_keyboard">
+        app:layout_constraintBottom_toTopOf="@id/rv_custom_keyboard"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
 
         <android.support.constraint.ConstraintLayout
             android:id="@+id/cl_chat_composer"
@@ -737,7 +750,9 @@
         android:nestedScrollingEnabled="false"
         android:overScrollMode="never"
         android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent" />
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <ImageView
         android:id="@+id/iv_to_bottom"
