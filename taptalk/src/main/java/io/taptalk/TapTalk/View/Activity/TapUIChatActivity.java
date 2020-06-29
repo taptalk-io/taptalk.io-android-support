@@ -1397,40 +1397,40 @@ public class TapUIChatActivity extends TAPBaseChatActivity {
     }
 
     private void callApiGetUserByUserID() {
-//        new Thread(() -> {
-        if (TAPChatManager.getInstance().isNeedToCalledUpdateRoomStatusAPI() && TAPNetworkStateManager.getInstance().hasNetworkConnection(this)) {
-            TAPDataManager.getInstance().getUserByIdFromApi(vm.getOtherUserID(), new TAPDefaultDataView<TAPGetUserResponse>() {
-                @Override
-                public void onSuccess(TAPGetUserResponse response) {
-                    TAPUserModel userResponse = response.getUser();
-                    TAPContactManager.getInstance().updateUserData(userResponse);
-                    TAPOnlineStatusModel onlineStatus = TAPOnlineStatusModel.Builder(userResponse);
-                    setChatRoomStatus(onlineStatus);
-                    TAPChatManager.getInstance().setNeedToCalledUpdateRoomStatusAPI(false);
+        new Thread(() -> {
+            if (TAPChatManager.getInstance().isNeedToCalledUpdateRoomStatusAPI() && TAPNetworkStateManager.getInstance().hasNetworkConnection(this)) {
+                TAPDataManager.getInstance().getUserByIdFromApi(vm.getOtherUserID(), new TAPDefaultDataView<TAPGetUserResponse>() {
+                    @Override
+                    public void onSuccess(TAPGetUserResponse response) {
+                        TAPUserModel userResponse = response.getUser();
+                        TAPContactManager.getInstance().updateUserData(userResponse);
+                        TAPOnlineStatusModel onlineStatus = TAPOnlineStatusModel.Builder(userResponse);
+                        setChatRoomStatus(onlineStatus);
+                        TAPChatManager.getInstance().setNeedToCalledUpdateRoomStatusAPI(false);
 
-                    if (null == vm.getOtherUserModel()) {
-                        vm.setOtherUserModel(response.getUser());
-                        initRoom();
-                    }
+                        if (null == vm.getOtherUserModel()) {
+                            vm.setOtherUserModel(response.getUser());
+                            initRoom();
+                        }
 
 //                    if (!TAPDataManager.getInstance().isChatRoomContactActionDismissed(vm.getRoom().getRoomID()) && (null == vm.getOtherUserModel().getIsContact() || vm.getOtherUserModel().getIsContact() == 0)) {
 //                        clContactAction.setVisibility(View.VISIBLE);
 //                    } else {
 //                        clContactAction.setVisibility(View.GONE);
 //                    }
-                }
-
-                @Override
-                public void onError(TAPErrorModel error) {
-                    if (null != error.getCode() && error.getCode().equals(String.valueOf(USER_NOT_FOUND))) {
-                        showChatAsHistory(getString(R.string.tap_this_user_is_no_longer_available));
                     }
-                }
-            });
-        } else if (null == vm.getOtherUserModel()) {
-            showChatAsHistory(getString(R.string.tap_this_user_is_no_longer_available));
-        }
-//        }).start();
+
+                    @Override
+                    public void onError(TAPErrorModel error) {
+                        if (null != error.getCode() && error.getCode().equals(String.valueOf(USER_NOT_FOUND))) {
+                            showChatAsHistory(getString(R.string.tap_this_user_is_no_longer_available));
+                        }
+                    }
+                });
+            } else if (null == vm.getOtherUserModel()) {
+                showChatAsHistory(getString(R.string.tap_this_user_is_no_longer_available));
+            }
+        }).start();
     }
 
     private void showChatAsHistory(String message) {
