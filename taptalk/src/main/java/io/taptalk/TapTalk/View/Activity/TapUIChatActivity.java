@@ -1402,22 +1402,24 @@ public class TapUIChatActivity extends TAPBaseChatActivity {
                 TAPDataManager.getInstance().getUserByIdFromApi(vm.getOtherUserID(), new TAPDefaultDataView<TAPGetUserResponse>() {
                     @Override
                     public void onSuccess(TAPGetUserResponse response) {
-                        TAPUserModel userResponse = response.getUser();
-                        TAPContactManager.getInstance().updateUserData(userResponse);
-                        TAPOnlineStatusModel onlineStatus = TAPOnlineStatusModel.Builder(userResponse);
-                        setChatRoomStatus(onlineStatus);
-                        TAPChatManager.getInstance().setNeedToCalledUpdateRoomStatusAPI(false);
+                        runOnUiThread(() -> {
+                            TAPUserModel userResponse = response.getUser();
+                            TAPContactManager.getInstance().updateUserData(userResponse);
+                            TAPOnlineStatusModel onlineStatus = TAPOnlineStatusModel.Builder(userResponse);
+                            setChatRoomStatus(onlineStatus);
+                            TAPChatManager.getInstance().setNeedToCalledUpdateRoomStatusAPI(false);
 
-                        if (null == vm.getOtherUserModel()) {
-                            vm.setOtherUserModel(response.getUser());
-                            initRoom();
-                        }
+                            if (null == vm.getOtherUserModel()) {
+                                vm.setOtherUserModel(response.getUser());
+                                initRoom();
+                            }
 
-                        if (!TAPDataManager.getInstance().isChatRoomContactActionDismissed(vm.getRoom().getRoomID()) && (null == vm.getOtherUserModel().getIsContact() || vm.getOtherUserModel().getIsContact() == 0)) {
-                            runOnUiThread(() -> clContactAction.setVisibility(View.VISIBLE));
-                        } else {
-                            runOnUiThread(() -> clContactAction.setVisibility(View.GONE));
-                        }
+                            if (!TAPDataManager.getInstance().isChatRoomContactActionDismissed(vm.getRoom().getRoomID()) && (null == vm.getOtherUserModel().getIsContact() || vm.getOtherUserModel().getIsContact() == 0)) {
+                                clContactAction.setVisibility(View.VISIBLE);
+                            } else {
+                                clContactAction.setVisibility(View.GONE);
+                            }
+                        });
                     }
 
                     @Override
