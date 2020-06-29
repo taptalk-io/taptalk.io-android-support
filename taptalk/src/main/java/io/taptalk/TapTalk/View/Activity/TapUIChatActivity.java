@@ -1432,7 +1432,7 @@ public class TapUIChatActivity extends TAPBaseChatActivity {
 //            else if (null == vm.getOtherUserModel()) {
 //                showChatAsHistory(getString(R.string.tap_this_user_is_no_longer_available));
 //            }
-        }).start();
+//        }).start();
     }
 
     private void showChatAsHistory(String message) {
