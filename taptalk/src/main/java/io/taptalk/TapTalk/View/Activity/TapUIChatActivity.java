@@ -83,6 +83,7 @@ import io.taptalk.TapTalk.Listener.TAPAttachmentListener;
 import io.taptalk.TapTalk.Listener.TAPChatListener;
 import io.taptalk.TapTalk.Listener.TAPDatabaseListener;
 import io.taptalk.TapTalk.Listener.TAPSocketListener;
+import io.taptalk.TapTalk.Listener.TapCommonListener;
 import io.taptalk.TapTalk.Listener.TapListener;
 import io.taptalk.TapTalk.Manager.TAPCacheManager;
 import io.taptalk.TapTalk.Manager.TAPChatManager;
@@ -272,6 +273,22 @@ public class TapUIChatActivity extends TAPBaseChatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        if (!TapTalk.isAutoConnectEnabled() && !TapTalk.isConnected()) {
+            Toast.makeText(TapUIChatActivity.this, "Connecting to Socket", Toast.LENGTH_SHORT).show();
+            TapTalk.connect(new TapCommonListener() {
+                @Override
+                public void onSuccess(String successMessage) {
+                    super.onSuccess(successMessage);
+                    Toast.makeText(TapUIChatActivity.this, "Socket Connected", Toast.LENGTH_SHORT).show();
+                }
+
+                @Override
+                public void onError(String errorCode, String errorMessage) {
+                    super.onError(errorCode, errorMessage);
+                    Toast.makeText(TapUIChatActivity.this, "Fail Connect to Socket", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
         TAPChatManager.getInstance().setActiveRoom(vm.getRoom());
         etChat.setText(TAPChatManager.getInstance().getMessageFromDraft());
         showQuoteLayout(vm.getQuotedMessage(), vm.getQuoteAction(), false);
@@ -305,6 +322,10 @@ public class TapUIChatActivity extends TAPBaseChatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+
+        if (!TapTalk.isAutoConnectEnabled() && TapTalk.isConnected()) {
+            TapTalk.disconnect();
+        }
 
         // Reload UI in room list
         Intent intent = new Intent(RELOAD_ROOM_LIST);
@@ -1377,8 +1398,7 @@ public class TapUIChatActivity extends TAPBaseChatActivity {
 
     private void callApiGetUserByUserID() {
         new Thread(() -> {
-            if (TAPChatManager.getInstance().isNeedToCalledUpdateRoomStatusAPI() &&
-                    TAPNetworkStateManager.getInstance().hasNetworkConnection(this))
+            if (TAPChatManager.getInstance().isNeedToCalledUpdateRoomStatusAPI() && TAPNetworkStateManager.getInstance().hasNetworkConnection(this)) {
                 TAPDataManager.getInstance().getUserByIdFromApi(vm.getOtherUserID(), new TAPDefaultDataView<TAPGetUserResponse>() {
                     @Override
                     public void onSuccess(TAPGetUserResponse response) {
@@ -1393,12 +1413,11 @@ public class TapUIChatActivity extends TAPBaseChatActivity {
                             initRoom();
                         }
 
-                        if (!TAPDataManager.getInstance().isChatRoomContactActionDismissed(vm.getRoom().getRoomID()) &&
-                                (null == vm.getOtherUserModel().getIsContact() || vm.getOtherUserModel().getIsContact() == 0)) {
-                            clContactAction.setVisibility(View.VISIBLE);
-                        } else {
-                            clContactAction.setVisibility(View.GONE);
-                        }
+//                    if (!TAPDataManager.getInstance().isChatRoomContactActionDismissed(vm.getRoom().getRoomID()) && (null == vm.getOtherUserModel().getIsContact() || vm.getOtherUserModel().getIsContact() == 0)) {
+//                        clContactAction.setVisibility(View.VISIBLE);
+//                    } else {
+//                        clContactAction.setVisibility(View.GONE);
+//                    }
                     }
 
                     @Override
@@ -1408,7 +1427,7 @@ public class TapUIChatActivity extends TAPBaseChatActivity {
                         }
                     }
                 });
-            else if (null == vm.getOtherUserModel()) {
+            } else if (null == vm.getOtherUserModel()) {
                 showChatAsHistory(getString(R.string.tap_this_user_is_no_longer_available));
             }
         }).start();
