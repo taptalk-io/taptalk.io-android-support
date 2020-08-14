@@ -1416,6 +1416,7 @@ public class TapUIChatActivity extends TAPBaseChatActivity {
 
                             if (!TAPDataManager.getInstance().isChatRoomContactActionDismissed(vm.getRoom().getRoomID()) && (null == vm.getOtherUserModel().getIsContact() || vm.getOtherUserModel().getIsContact() == 0)) {
                                 clContactAction.setVisibility(View.VISIBLE);
+                                messageAdapter.notifyDataSetChanged();
                             } else {
                                 clContactAction.setVisibility(View.GONE);
                             }
