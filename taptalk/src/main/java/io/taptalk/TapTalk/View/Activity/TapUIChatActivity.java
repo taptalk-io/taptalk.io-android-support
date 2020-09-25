@@ -274,18 +274,15 @@ public class TapUIChatActivity extends TAPBaseChatActivity {
     protected void onResume() {
         super.onResume();
         if (!TapTalk.isAutoConnectEnabled() && !TapTalk.isConnected()) {
-            Toast.makeText(TapUIChatActivity.this, "Connecting to Socket", Toast.LENGTH_SHORT).show();
             TapTalk.connect(new TapCommonListener() {
                 @Override
                 public void onSuccess(String successMessage) {
                     super.onSuccess(successMessage);
-                    Toast.makeText(TapUIChatActivity.this, "Socket Connected", Toast.LENGTH_SHORT).show();
                 }
 
                 @Override
                 public void onError(String errorCode, String errorMessage) {
                     super.onError(errorCode, errorMessage);
-                    Toast.makeText(TapUIChatActivity.this, "Fail Connect to Socket", Toast.LENGTH_SHORT).show();
                 }
             });
         }
