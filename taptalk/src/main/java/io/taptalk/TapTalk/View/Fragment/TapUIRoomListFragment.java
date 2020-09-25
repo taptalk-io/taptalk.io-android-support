@@ -31,7 +31,6 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.DataSource;
@@ -149,18 +148,15 @@ public class TapUIRoomListFragment extends Fragment {
     public void onResume() {
         super.onResume();
         if (!TapTalk.isAutoConnectEnabled() && !TapTalk.isConnected()) {
-            Toast.makeText(getContext(), "Connecting to Socket", Toast.LENGTH_SHORT).show();
             TapTalk.connect(new TapCommonListener() {
                 @Override
                 public void onSuccess(String successMessage) {
                     super.onSuccess(successMessage);
-                    Toast.makeText(getContext(), "Socket Connected", Toast.LENGTH_SHORT).show();
                 }
 
                 @Override
                 public void onError(String errorCode, String errorMessage) {
                     super.onError(errorCode, errorMessage);
-                    Toast.makeText(getContext(), "Fail Connect to Socket", Toast.LENGTH_SHORT).show();
                 }
             });
         }
